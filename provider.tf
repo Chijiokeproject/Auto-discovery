@@ -4,8 +4,8 @@ provider "aws" {
 }
 
 provider "vault" {
-  address = "https://vault.chijiokedevops.space"
-  token   = "" # Ideally, use VAULT_TOKEN env variable instead of hardcoding
+address = "https://vault.chijiokedevops.space"
+token   = ""
 }
 
 terraform {
