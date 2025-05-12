@@ -3,12 +3,11 @@ provider "aws" {
   profile = "auto-discovery"
 }
 
-#provider "vault" {
-# address = "https://vault.bolatitoadegoroye.top"
-#token   = ""
-#}
+provider "vault" {
+  address = "https://vault.chijiokedevops.space"
+  token   = "" # Ideally, use VAULT_TOKEN env variable instead of hardcoding
+}
 
-#terraform backend configuration for s3
 terraform {
   backend "s3" {
     bucket       = "chijioke-bucket-auto-discovery"

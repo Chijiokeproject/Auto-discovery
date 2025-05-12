@@ -42,11 +42,11 @@ echo "🎉 S3 Remote State Management Setup Complete!"
 echo "🌍 S3 Bucket: $BUCKET_NAME"
 
 # Uncomment if you want to provision Vault and Jenkins automatically
- #echo "🚀 Provisioning Vault and Jenkins server..."
- #cd ./vault-jenkins
- #terraform init
- #terraform fmt --recursive
- #terraform validate
- #terraform apply -auto-approve
- #terraform output
- #echo "✅ Vault and Jenkins server provisioned successfully."
+ echo "🚀 Provisioning Vault and Jenkins server..."
+ cd ./vault-jenkins
+ terraform init
+ terraform fmt --recursive
+ terraform validate
+ terraform apply -auto-approve
+ terraform output
+ echo "✅ Vault and Jenkins server provisioned successfully."
