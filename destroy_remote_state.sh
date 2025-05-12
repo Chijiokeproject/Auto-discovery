@@ -2,9 +2,9 @@
 set -euo pipefail  # Enable strict error handling
 
 # Set Variables
-BUCKET_NAME="team2-bucket-pet-adoption"
+BUCKET_NAME="chijioke-bucket-auto-discovery"
 AWS_REGION="eu-west-2"
-PROFILE="pet-adoption"
+PROFILE="auto-discovery"
 
 # destroy vault and jenkins server
 cd ./vault-jenkins
