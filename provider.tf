@@ -3,10 +3,10 @@ provider "aws" {
   profile = "auto-discovery"
 }
 
-#provider "vault" {
-# address = "https://vault.bolatitoadegoroye.top"
-#token   = ""
-#}
+provider "vault" {
+address = "https://vault.chijiokedevops.space"
+token   = ""
+}
 
 #terraform backend configuration for s3
 terraform {
