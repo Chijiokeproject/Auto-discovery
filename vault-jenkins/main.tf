@@ -276,3 +276,161 @@ resource "aws_route53_record" "vault-record" {
   }
 }
 
+# Data source to get the latest RedHat AMI
+data "aws_ami" "redhat" {
+  most_recent = true
+  owners      = ["309956199498"] # RedHat's owner ID
+  filter {
+    name   = "name"
+    values = ["RHEL-9*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
+resource "aws_instance" "jenkins-server" {
+  ami                         = data.aws_ami.redhat.id # redhat in eu-west-2
+  instance_type               = "t2.medium"
+  key_name                    = aws_key_pair.public_key.id
+  associate_public_ip_address = true
+  vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
+  iam_instance_profile        = aws_iam_instance_profile.jenkins-profile.id
+  root_block_device {
+    volume_size = 30    # Size in GB
+    volume_type = "gp3" # General Purpose SSD (recommended)
+    encrypted   = true  # Enable encryption (best practice)
+  }
+  user_data = templatefile("./jenkins_userdata.sh", {
+    nr-key    = "",
+    nr-acc-id = 6496342
+  })
+
+  tags = {
+    Name = "${local.name}-jenkins-server"
+  }
+}
+# Create IAM role for Jenkins
+resource "aws_iam_role" "jenkins-role" {
+  name = "${local.name}-jenkins-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+# Attach the policy to the role
+resource "aws_iam_role_policy_attachment" "jenkins-role-attachment" {
+  role       = aws_iam_role.jenkins-role.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+# Attach the policy to the role
+resource "aws_iam_instance_profile" "jenkins-profile" {
+  name = "${local.name}-jenkins-profile"
+  role = aws_iam_role.jenkins-role.name
+}
+
+# Create jenkins security group
+resource "aws_security_group" "jenkins_sg" {
+  name        = "${local.name}-jenkins-sg"
+  description = "Allow SSH and HTTPS"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Create elastic Load Balancer for Jenkins
+resource "aws_elb" "elb_jenkins" {
+  name               = "elb-jenkins"
+  security_groups    = [aws_security_group.jenkins-elb-sg.id]
+  availability_zones = ["eu-west-2a", "eu-west-2b"]
+  listener {
+    instance_port      = 8080
+    instance_protocol  = "HTTP"
+    lb_port            = 443
+    lb_protocol        = "HTTPS"
+    ssl_certificate_id = aws_acm_certificate.auto-acm-cert.id
+  }
+  health_check {
+    healthy_threshold   = 3
+    unhealthy_threshold = 2
+    interval            = 30
+    timeout             = 5
+    target              = "TCP:8080"
+  }
+  instances                   = [aws_instance.jenkins-server.id]
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
+  tags = {
+    Name = "${local.name}-jenkins-server"
+  }
+}
+# Create Security group for the jenkins elb
+# 
+resource "aws_security_group" "jenkins-elb-sg" {
+  name        = "${local.name}-jenkins-elb-sg"
+  description = "Allow HTTPS"
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Create Route 53 record for jenkins server
+resource "aws_route53_record" "jenkins-record" {
+  zone_id = data.aws_route53_zone.auto-discovery-zone.zone_id
+  name    = "jenkins.${var.domain}"
+  type    = "A"
+  alias {
+    name                   = aws_elb.elb_jenkins.dns_name
+    zone_id                = aws_elb.elb_jenkins.zone_id
+    evaluate_target_health = true
+  }
+}
