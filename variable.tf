@@ -4,8 +4,8 @@ variable "domain" {
   default     = "chijiokedevops.space"
 }
 variable "nr-key" {
-  default     = ""
+  default = ""
 }
 variable "nr-id" {
-  default     = 6360298
+  default = 6360298
 }
