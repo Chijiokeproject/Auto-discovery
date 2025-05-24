@@ -1,6 +1,5 @@
 provider "aws" {
   region  = "eu-west-2"
-  profile = "auto-discovery"
 }
 
 provider "vault" {
@@ -14,6 +13,5 @@ terraform {
     key          = "infrastructure/terraform.tfstate"
     region       = "eu-west-2"
     use_lockfile = true
-    profile      = "auto-discovery"
   }
 }
