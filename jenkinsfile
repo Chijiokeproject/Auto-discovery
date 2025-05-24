@@ -10,7 +10,7 @@ pipeline {
         pollingSCM('* * * * *') // run every minutes
     }
     environment {
-        SLACKCHANNEL = '24th-march-auto-discovery-project-team-2'
+        SLACKCHANNEL = '21st-april-sock-shop-project-team-2
         SLACKCREDENTIALS = credentials('slack')
     }
     
