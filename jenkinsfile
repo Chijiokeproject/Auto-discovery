@@ -20,8 +20,9 @@ pipeline {
                 script {
                     sh 'pip install pipenv'
                     sh 'pipenv run pip install checkov'
-                    def checkovStatus = sh(script: 'pipenv run checkov -d . -o cli --output-file checkov-results.txt --quiet', returnStatus: true)
-                    junit allowEmptyResults: true, testResults: 'checkov-results.txt' 
+                    def checkovStatus = sh 'pipenv run checkov -d . -o junitxml --output-file checkov-results.xml'
+                      junit allowEmptyResults: true, testResults: 'checkov-results.xml'
+ 
                     // if (checkovStatus != 0) {
                     //     error 'Checkov found some issues'
                     // }
