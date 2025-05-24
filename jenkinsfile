@@ -5,7 +5,7 @@ pipeline {
         terraform 'terraform' // Make sure this name matches the configured tool in Jenkins
     }
 
-      environment {
+    environment {
         SLACKCHANNEL = '21st-april-sock-shop-project-team-2'
         SLACKCREDENTIALS = credentials('slack')
         AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
@@ -21,36 +21,30 @@ pipeline {
         pollSCM('* * * * *') // Runs every minute (for demo; consider reducing frequency)
     }
 
-    environment {
-        SLACKCHANNEL = '21st-april-sock-shop-project-team-2'
-        SLACKCREDENTIALS = credentials('slack')
-    }
-
     stages {
         stage('IAC Scan') {
             steps {
                 script {
                     sh 'pip install pipenv'
-                    sh 'pipenv install checkov' // safer than direct run pip
+                    sh 'pipenv install checkov'
                     def checkovStatus = sh(script: 'pipenv run checkov -d . -o junitxml --output-file checkov-results.xml', returnStatus: true)
 
                     junit allowEmptyResults: true, testResults: 'checkov-results.xml'
 
                     if (checkovStatus != 0) {
                         echo '⚠️ Checkov found issues. Proceeding anyway...'
-                        // Uncomment next line to stop the pipeline on error:
+                        // Uncomment the next line to fail the build on Checkov error
                         // error 'Checkov found critical issues.'
                     }
                 }
             }
         }
 
-      stage('Terraform Version') {
-          steps {
-             sh 'terraform version'
-           }
+        stage('Terraform Version') {
+            steps {
+                sh 'terraform version'
+            }
         }
-
 
         stage('Terraform Init') {
             steps {
@@ -89,7 +83,7 @@ pipeline {
         always {
             script {
                 slackSend(
-                    channel: SLACKCHANNEL,
+                    channel: env.SLACKCHANNEL,
                     color: currentBuild.result == 'SUCCESS' ? 'good' : 'danger',
                     message: "📦 Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' completed with status: ${currentBuild.result}. View: ${env.BUILD_URL}"
                 )
@@ -98,7 +92,7 @@ pipeline {
 
         failure {
             slackSend(
-                channel: SLACKCHANNEL,
+                channel: env.SLACKCHANNEL,
                 color: 'danger',
                 message: "❌ Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' failed. Check details: ${env.BUILD_URL}"
             )
@@ -106,11 +100,12 @@ pipeline {
 
         success {
             slackSend(
-                channel: SLACKCHANNEL,
+                channel: env.SLACKCHANNEL,
                 color: 'good',
                 message: "✅ Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' succeeded. View: ${env.BUILD_URL}"
             )
         }
     }
 }
+
 
