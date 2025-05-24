@@ -7,7 +7,7 @@ pipeline {
         choice(name: 'action', choices: ['apply', 'destroy'], description: 'Select the action to perform')
     }
     triggers {
-        pollingSCM('* * * * *') // run every minutes
+        pollSCM('* * * * *') // run every minutes
     }
     environment {
         SLACKCHANNEL = '24th-march-auto-discovery-project-team-2'
