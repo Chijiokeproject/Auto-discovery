@@ -71,32 +71,32 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            script {
-                slackSend(
-                    channel: env.SLACKCHANNEL,
-                    color: currentBuild.result == 'SUCCESS' ? 'good' : 'danger',
-                    message: "📦 Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' completed with status: ${currentBuild.result}. View: ${env.BUILD_URL}"
-                )
-            }
-        }
+   // post {
+     //   always {
+       //     script {
+         //       slackSend(
+           //         channel: env.SLACKCHANNEL,
+             //       color: currentBuild.result == 'SUCCESS' ? 'good' : 'danger',
+               //     message: "📦 Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' completed with status: ${currentBuild.result}. View: ${env.BUILD_URL}"
+              //  )
+           // }
+      //  }
 
-        failure {
-            slackSend(
-                channel: env.SLACKCHANNEL,
-                color: 'danger',
-                message: "❌ Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' failed. Check details: ${env.BUILD_URL}"
-            )
-        }
+      //  failure {
+        //    slackSend(
+          //      channel: env.SLACKCHANNEL,
+            //    color: 'danger',
+              //  message: "❌ Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' failed. Check details: ${env.BUILD_URL}"
+          //  )
+      //  }
 
-        success {
-            slackSend(
-                channel: env.SLACKCHANNEL,
-                color: 'good',
-                message: "✅ Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' succeeded. View: ${env.BUILD_URL}"
-            )
-        }
+       // success {
+        //    slackSend(
+          //      channel: env.SLACKCHANNEL,
+            //    color: 'good',
+             // //  message: "✅ Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' succeeded. View: ${env.BUILD_URL}"
+          //  )
+      //  }
     }
 }
 
