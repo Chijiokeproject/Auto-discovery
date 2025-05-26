@@ -104,6 +104,6 @@ token_content=$(</home/ubuntu/token.txt)
 grep -o 's\.[A-Za-z0-9]\{24\}' /home/ubuntu/output.txt > /home/ubuntu/token.txt
 vault login $token_content
 vault secrets enable -path=secret/ kv #directory to store secrets on the vault server
-vault kv put secret/database username=petclinic password=petclinic
+vault kv put secret/database username=petclinic password=chijioke
 # Set hostname to Vault
 sudo hostnamectl set-hostname Vault

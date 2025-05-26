@@ -12,7 +12,7 @@ pipeline {
     triggers {
         pollSCM('* * * * *') // Runs every minute (for demo; consider reducing frequency)
     }
-
+ 
     stages {
         stage('IAC Scan') {
             steps {
