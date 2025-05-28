@@ -1,84 +1,103 @@
 pipeline {
     agent any
+
     tools {
-        terraform 'terraform'
+        terraform 'terraform' // Make sure this matches the configured tool in Jenkins
     }
+
     parameters {
         choice(name: 'action', choices: ['apply', 'destroy'], description: 'Select the action to perform')
     }
+
     triggers {
-        pollingSCM('* * * * *') // run every minutes
+        pollSCM('* * * * *') // Runs every minute (for demo; consider reducing frequency)
     }
-    environment {
-        SLACKCHANNEL = '21st-april-sock-shop-project-team-2
-        SLACKCREDENTIALS = credentials('slack')
-    }
-    
+ 
     stages {
         stage('IAC Scan') {
             steps {
                 script {
                     sh 'pip install pipenv'
-                    sh 'pipenv run pip install checkov'
-                    def checkovStatus = sh(script: 'pipenv run checkov -d . -o cli --output-file checkov-results.txt --quiet', returnStatus: true)
-                    junit allowEmptyResults: true, testResults: 'checkov-results.txt' 
-                    // if (checkovStatus != 0) {
-                    //     error 'Checkov found some issues'
-                    // }
+                    sh 'pipenv install checkov'
+                    def checkovStatus = sh(script: 'pipenv run checkov -d . -o junitxml --output-file checkov-results.xml', returnStatus: true)
+
+                    junit allowEmptyResults: true, testResults: 'checkov-results.xml'
+
+                    if (checkovStatus != 0) {
+                        echo '⚠️ Checkov found issues. Proceeding anyway...'
+                        // Uncomment the next line to fail the build on Checkov error
+                        // error 'Checkov found critical issues.'
+                    }
                 }
             }
         }
-        stage('Terraform Init') {  // Fixed spelling
+
+        stage('Terraform Version') {
+            steps {
+                sh 'terraform version'
+            }
+        }
+
+        stage('Terraform Init') {
             steps {
                 sh 'terraform init'
             }
         }
-        stage('Terraform format') {
+
+        stage('Terraform Format') {
             steps {
                 sh 'terraform fmt --recursive'
             }
         }
-        stage('Terraform validate') {
+
+        stage('Terraform Validate') {
             steps {
                 sh 'terraform validate'
             }
         }
-        stage('Terraform plan') {
+
+        stage('Terraform Plan') {
             steps {
                 sh 'terraform plan'
             }
         }
-        stage('Terraform action') {
+
+        stage('Terraform Action') {
             steps {
                 script {
-                    sh "terraform ${action} -auto-approve"
+                    sh "terraform ${params.action} -auto-approve"
                 }
             }
         }
     }
+
     post {
         always {
             script {
                 slackSend(
-                    channel: SLACKCHANNEL,
+                    channel: env.SLACKCHANNEL,
                     color: currentBuild.result == 'SUCCESS' ? 'good' : 'danger',
-                    message: "Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL}) has been completed."
+                    message: "📦 Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' completed with status: ${currentBuild.result}. View: ${env.BUILD_URL}"
                 )
             }
         }
+
         failure {
             slackSend(
-                channel: SLACKCHANNEL,
+                channel: env.SLACKCHANNEL,
                 color: 'danger',
-                message: "Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' has failed. Check console output at ${env.BUILD_URL}."
+                message: "❌ Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' failed. Check details: ${env.BUILD_URL}"
             )
         }
+
         success {
             slackSend(
-                channel: SLACKCHANNEL,
+                channel: env.SLACKCHANNEL,
                 color: 'good',
-                message: "Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' completed successfully. Check console output at ${env.BUILD_URL}."
+                message: "✅ Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' succeeded. View: ${env.BUILD_URL}"
             )
         }
     }
 }
+
+
