@@ -31,8 +31,8 @@ resource "aws_db_instance" "auto_mysql_database" {
   storage_type      = "gp3"
   storage_encrypted = true
   # Credentials (Fetch from Vault Manager)
-  username = data.vault_generic_secret.vault-secret.data["username"]
-  password = data.vault_generic_secret.vault-secret.data["password"]
+  username = data.vault_generic_secret.vault-secret.data["petclinic"]
+  password = data.vault_generic_secret.vault-secret.data["chijioke"]
   # Backup & Maintenance
   skip_final_snapshot = true
   # Security

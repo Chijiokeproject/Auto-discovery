@@ -97,11 +97,11 @@ echo "Vault server provisioned successfully."
 sudo systemctl start vault
 sudo systemctl enable vault
 sleep 20
- #Set vault token/secret username and password
+# #Set vault token/secret username and password
 touch /home/ubuntu/output.txt
 vault operator init > /home/ubuntu/output.txt
-token_content=$(</home/ubuntu/token.txt)
 grep -o 's\.[A-Za-z0-9]\{24\}' /home/ubuntu/output.txt > /home/ubuntu/token.txt
+token_content=$(</home/ubuntu/token.txt)
 vault login $token_content
 vault secrets enable -path=secret/ kv #directory to store secrets on the vault server
 vault kv put secret/database username=petclinic password=chijioke
