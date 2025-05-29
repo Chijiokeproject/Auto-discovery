@@ -52,7 +52,7 @@ resource "aws_security_group" "RDS-sg" {
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
-    security_groups = [var.bastion, var.stage-sg, var.prod-sg]
+    security_groups = [var.bastion_sg, var.stage-sg, var.prod-sg]
   }
   egress {
     from_port   = 0
