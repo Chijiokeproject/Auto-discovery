@@ -10,7 +10,10 @@ resource "aws_kms_key" "auto-kms-key" {
 # alias of the kms key
 resource "aws_kms_alias" "auto-kms-key" {
   name          = "alias/${local.name}-kms-key"
-  target_key_id = aws_kms_key.auto-kms-key.key_id
+  target_key_id = aws_kms_key.auto-kms-key.id
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_iam_role" "vault_role" {
