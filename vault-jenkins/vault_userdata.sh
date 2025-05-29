@@ -1,16 +1,17 @@
 #!/bin/bash
 
 # Update package repositories
-sudo apt update
+ apt update
 
 # Download and install Consul
-sudo wget https://releases.hashicorp.com/consul/1.7.3/consul_1.7.3_linux_amd64.zip
-sudo apt install unzip -y
-sudo unzip consul_1.7.3_linux_amd64.zip
-sudo mv consul /usr/bin/
+ wget https://releases.hashicorp.com/consul/1.7.3/consul_1.7.3_linux_amd64.zip
+ apt install unzip jq -y
+ unzip consul_1.7.3_linux_amd64.zip
+ mv consul /usr/bin/
+
 
 # Create a Consul systemd service
-sudo cat <<EOT>> /etc/systemd/system/consul.service
+ cat <<EOT>> /etc/systemd/system/consul.service
 [Unit]
 Description=Consul
 Documentation=https://www.consul.io/

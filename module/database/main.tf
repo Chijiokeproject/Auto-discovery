@@ -1,3 +1,4 @@
+
 #  RDS Subnet Group
 resource "aws_db_subnet_group" "auto_db_subnet_group" {
   name        = "${var.name}-db_subnet"
@@ -8,15 +9,16 @@ resource "aws_db_subnet_group" "auto_db_subnet_group" {
     Name = "${var.name}-db-Subnet-Group"
   }
 }
-data "vault_kv_secret" "vault-secret" {
+data "vault_generic_secret" "vault-secret" {
   path = "secret/database"
 }
+
 
 resource "aws_db_instance" "auto_mysql_database" {
   identifier             = "${var.name}-db"
   db_subnet_group_name   = aws_db_subnet_group.auto_db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.RDS-sg.id]
-  db_name                = "autodiscovery"
+  db_name                = "petadoption"
   # High Availability
   multi_az = false
 
@@ -31,8 +33,8 @@ resource "aws_db_instance" "auto_mysql_database" {
   storage_type      = "gp3"
   storage_encrypted = true
   # Credentials (Fetch from Vault Manager)
-  username = data.vault_kv_secret.vault-secret.data["petclinic"]
-  password = data.vault_kv_secret.vault-secret.data["chijioke"]
+  username = data.vault_generic_secret.vault-secret.data["username"]
+  password = data.vault_generic_secret.vault-secret.data["password"]
   # Backup & Maintenance
   skip_final_snapshot = true
   # Security
@@ -50,7 +52,7 @@ resource "aws_security_group" "RDS-sg" {
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
-    security_groups = [var.bastion_sg, var.stage-sg, var.prod-sg]
+    security_groups = [var.bastion, var.stage-sg, var.prod-sg]
   }
   egress {
     from_port   = 0
