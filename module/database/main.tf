@@ -8,7 +8,7 @@ resource "aws_db_subnet_group" "auto_db_subnet_group" {
     Name = "${var.name}-db-Subnet-Group"
   }
 }
-data "vault_generic_secret" "vault-secret" {
+data "vault_kv_secret" "vault-secret" {
   path = "secret/database"
 }
 
@@ -31,8 +31,8 @@ resource "aws_db_instance" "auto_mysql_database" {
   storage_type      = "gp3"
   storage_encrypted = true
   # Credentials (Fetch from Vault Manager)
-  username = data.vault_generic_secret.vault-secret.data["petclinic"]
-  password = data.vault_generic_secret.vault-secret.data["chijioke"]
+  username = data.vault_kv_secret.vault-secret.data["petclinic"]
+  password = data.vault_kv_secret.vault-secret.data["chijioke"]
   # Backup & Maintenance
   skip_final_snapshot = true
   # Security
