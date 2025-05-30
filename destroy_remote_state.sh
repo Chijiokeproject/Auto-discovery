@@ -2,8 +2,8 @@
 set -euo pipefail  # Enable strict error handling
 
 # Set Variables
-BUCKET_NAME="chijioke-bucket-auto-discovery"
-AWS_REGION="eu-west-2"
+BUCKET_NAME="chijioke-bucket-auto-discovery-1"
+AWS_REGION="eu-west-3"
 PROFILE="auto-discovery"
 
 # destroy vault and jenkins server

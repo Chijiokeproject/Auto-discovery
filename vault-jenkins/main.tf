@@ -137,7 +137,7 @@ resource "aws_instance" "vault_server" {
   security_groups      = [aws_security_group.vault_sg.name]
   iam_instance_profile = aws_iam_instance_profile.vault-profile.id
   user_data = templatefile("./vault_userdata.sh", {
-    var1 = "eu-west-2",
+    var1 = "eu-west-3",
     var2 = aws_kms_key.auto-kms-key.id
   })
 
@@ -180,10 +180,11 @@ resource "aws_acm_certificate" "auto-acm-cert" {
   }
 }
 # Fetch Route 53 Zone for DNS Validation
-data "aws_route53_zone" "auto-discovery-zone" {
+data "aws_route53_zone" "vault-zones" {
   name         = "chijiokedevops.space"
   private_zone = false
 }
+
 
 # Fetch DNS Validation Records for ACM Certificate
 resource "aws_route53_record" "acm_validation_record" {
@@ -196,7 +197,7 @@ resource "aws_route53_record" "acm_validation_record" {
   }
 
   # Create DNS Validation Record for ACM Certificate
-  zone_id         = data.aws_route53_zone.auto-discovery-zone.zone_id
+  zone_id         = data.aws_route53_zone.vault-zone.zone_id
   allow_overwrite = true
   name            = each.value.name
   type            = each.value.type
@@ -240,8 +241,8 @@ resource "aws_security_group" "elb-vault-sg" {
 
 # Create load balancer for Vault Server
 resource "aws_elb" "elb-vault" {
-  name    = "vault-elb"
-  subnets = [aws_subnet.pub_sub.id, aws_subnet.pub_sub_2b.id]
+  name               = "vault-elb"
+  availability_zones = ["eu-west-3a", "eu-west-3b"]
 
   listener {
     instance_port      = 8200
@@ -270,11 +271,7 @@ resource "aws_elb" "elb-vault" {
   }
 }
 
-# Create Route 53 Hosted Zone
-data "aws_route53_zone" "vault-zone" {
-  name         = var.domain
-  private_zone = false
-}
+
 
 # Create Route 53 A Record for Vault Server
 resource "aws_route53_record" "vault-record" {
@@ -389,9 +386,9 @@ resource "aws_security_group" "jenkins_sg" {
 
 # Create elastic Load Balancer for Jenkins
 resource "aws_elb" "elb_jenkins" {
-  name            = "elb-jenkins"
-  security_groups = [aws_security_group.jenkins-elb-sg.id]
-  subnets         = [aws_subnet.pub_sub.id, aws_subnet.pub_sub_2b.id]
+  name               = "elb-jenkins"
+  security_groups    = [aws_security_group.jenkins-elb-sg.id]
+  availability_zones = ["eu-west-3a", "eu-west-3b"]
   listener {
     instance_port      = 8080
     instance_protocol  = "HTTP"
@@ -443,7 +440,7 @@ resource "aws_security_group" "jenkins-elb-sg" {
 
 # Create Route 53 record for jenkins server
 resource "aws_route53_record" "jenkins-record" {
-  zone_id = data.aws_route53_zone.auto-discovery-zone.zone_id
+  zone_id = data.aws_route53_zone.vault-zone.zone_id
   name    = "jenkins.${var.domain}"
   type    = "A"
   alias {
