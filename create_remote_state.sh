@@ -44,7 +44,8 @@ echo "🌍 S3 Bucket: $BUCKET_NAME"
 # Uncomment if you want to provision Vault and Jenkins automatically
  echo "🚀 Provisioning Vault and Jenkins server..."
  cd ./vault-jenkins
- terraform init
+
+ terraform init 
  terraform fmt --recursive
  terraform validate
  terraform apply -auto-approve

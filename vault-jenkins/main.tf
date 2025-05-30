@@ -1,6 +1,23 @@
 locals {
   name = "auto-discovery"
 }
+
+# Create keypair resource
+resource "tls_private_key" "keypair" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+resource "local_file" "private_key" {
+  content         = tls_private_key.keypair.private_key_pem
+  filename        = "${local.name}-key.pem"
+  file_permission = "400"
+}
+
+resource "aws_key_pair" "public_key" {
+  key_name   = "${local.name}-key"
+  public_key = tls_private_key.keypair.public_key_openssh
+}
+
 #Creating kms key
 resource "aws_kms_key" "auto-kms-key" {
   description             = "${local.name}-vault-kms-key" // the kms key 
@@ -129,25 +146,11 @@ resource "aws_instance" "vault_server" {
   }
 }
 
-# Create keypair resource
-resource "tls_private_key" "keypair" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-resource "local_file" "private_key" {
-  content         = tls_private_key.keypair.private_key_pem
-  filename        = "${local.name}-key.pem"
-  file_permission = "400"
-}
-resource "aws_key_pair" "public_key" {
-  key_name   = "${local.name}-key"
-  public_key = tls_private_key.keypair.public_key_openssh
-}
 
 #create a time sleep resource that allow terraform to wait till vault server is ready
 resource "time_sleep" "wait_3_min" {
   depends_on      = [aws_instance.vault_server]
-  create_duration = "180s"
+  create_duration = "300s"
 }
 
 #create null resource to fetch vault token
@@ -215,6 +218,12 @@ resource "aws_security_group" "elb-vault-sg" {
   description = "Allow HTTPS"
 
   ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
@@ -231,8 +240,8 @@ resource "aws_security_group" "elb-vault-sg" {
 
 # Create load balancer for Vault Server
 resource "aws_elb" "elb-vault" {
-  name               = "vault-elb"
-  availability_zones = ["eu-west-2a", "eu-west-2b"]
+  name    = "vault-elb"
+  subnets = [aws_subnet.pub_sub.id, aws_subnet.pub_sub_2b.id]
 
   listener {
     instance_port      = 8200
@@ -380,9 +389,9 @@ resource "aws_security_group" "jenkins_sg" {
 
 # Create elastic Load Balancer for Jenkins
 resource "aws_elb" "elb_jenkins" {
-  name               = "elb-jenkins"
-  security_groups    = [aws_security_group.jenkins-elb-sg.id]
-  availability_zones = ["eu-west-2a", "eu-west-2b"]
+  name            = "elb-jenkins"
+  security_groups = [aws_security_group.jenkins-elb-sg.id]
+  subnets         = [aws_subnet.pub_sub.id, aws_subnet.pub_sub_2b.id]
   listener {
     instance_port      = 8080
     instance_protocol  = "HTTP"
@@ -412,6 +421,12 @@ resource "aws_security_group" "jenkins-elb-sg" {
   name        = "${local.name}-jenkins-elb-sg"
   description = "Allow HTTPS"
 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   ingress {
     from_port   = 443
     to_port     = 443
