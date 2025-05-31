@@ -1,6 +1,23 @@
 locals {
   name = "auto-discovery"
 }
+
+# Create keypair resource
+resource "tls_private_key" "keypair" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+resource "local_file" "private_key" {
+  content         = tls_private_key.keypair.private_key_pem
+  filename        = "${local.name}-key.pem"
+  file_permission = "400"
+}
+
+resource "aws_key_pair" "public_key" {
+  key_name   = "${local.name}-key"
+  public_key = tls_private_key.keypair.public_key_openssh
+}
+
 #Creating kms key
 resource "aws_kms_key" "auto-kms-key" {
   description             = "${local.name}-vault-kms-key" // the kms key 
@@ -120,7 +137,7 @@ resource "aws_instance" "vault_server" {
   security_groups      = [aws_security_group.vault_sg.name]
   iam_instance_profile = aws_iam_instance_profile.vault-profile.id
   user_data = templatefile("./vault_userdata.sh", {
-    var1 = "eu-west-2",
+    var1 = "eu-west-3",
     var2 = aws_kms_key.auto-kms-key.id
   })
 
@@ -129,25 +146,11 @@ resource "aws_instance" "vault_server" {
   }
 }
 
-# Create keypair resource
-resource "tls_private_key" "keypair" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-resource "local_file" "private_key" {
-  content         = tls_private_key.keypair.private_key_pem
-  filename        = "${local.name}-key.pem"
-  file_permission = "400"
-}
-resource "aws_key_pair" "public_key" {
-  key_name   = "${local.name}-key"
-  public_key = tls_private_key.keypair.public_key_openssh
-}
 
 #create a time sleep resource that allow terraform to wait till vault server is ready
 resource "time_sleep" "wait_3_min" {
   depends_on      = [aws_instance.vault_server]
-  create_duration = "180s"
+  create_duration = "300s"
 }
 
 #create null resource to fetch vault token
@@ -177,10 +180,11 @@ resource "aws_acm_certificate" "auto-acm-cert" {
   }
 }
 # Fetch Route 53 Zone for DNS Validation
-data "aws_route53_zone" "auto-discovery-zone" {
+data "aws_route53_zone" "vault-zones" {
   name         = "chijiokedevops.space"
   private_zone = false
 }
+
 
 # Fetch DNS Validation Records for ACM Certificate
 resource "aws_route53_record" "acm_validation_record" {
@@ -193,7 +197,7 @@ resource "aws_route53_record" "acm_validation_record" {
   }
 
   # Create DNS Validation Record for ACM Certificate
-  zone_id         = data.aws_route53_zone.auto-discovery-zone.zone_id
+  zone_id         = data.aws_route53_zone.vault-zone.zone_id
   allow_overwrite = true
   name            = each.value.name
   type            = each.value.type
@@ -215,6 +219,12 @@ resource "aws_security_group" "elb-vault-sg" {
   description = "Allow HTTPS"
 
   ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
@@ -232,7 +242,7 @@ resource "aws_security_group" "elb-vault-sg" {
 # Create load balancer for Vault Server
 resource "aws_elb" "elb-vault" {
   name               = "vault-elb"
-  availability_zones = ["eu-west-2a", "eu-west-2b"]
+  availability_zones = ["eu-west-3a", "eu-west-3b"]
 
   listener {
     instance_port      = 8200
@@ -261,11 +271,7 @@ resource "aws_elb" "elb-vault" {
   }
 }
 
-# Create Route 53 Hosted Zone
-data "aws_route53_zone" "vault-zone" {
-  name         = var.domain
-  private_zone = false
-}
+
 
 # Create Route 53 A Record for Vault Server
 resource "aws_route53_record" "vault-record" {
@@ -382,7 +388,7 @@ resource "aws_security_group" "jenkins_sg" {
 resource "aws_elb" "elb_jenkins" {
   name               = "elb-jenkins"
   security_groups    = [aws_security_group.jenkins-elb-sg.id]
-  availability_zones = ["eu-west-2a", "eu-west-2b"]
+  availability_zones = ["eu-west-3a", "eu-west-3b"]
   listener {
     instance_port      = 8080
     instance_protocol  = "HTTP"
@@ -413,6 +419,12 @@ resource "aws_security_group" "jenkins-elb-sg" {
   description = "Allow HTTPS"
 
   ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
@@ -428,7 +440,7 @@ resource "aws_security_group" "jenkins-elb-sg" {
 
 # Create Route 53 record for jenkins server
 resource "aws_route53_record" "jenkins-record" {
-  zone_id = data.aws_route53_zone.auto-discovery-zone.zone_id
+  zone_id = data.aws_route53_zone.vault-zone.zone_id
   name    = "jenkins.${var.domain}"
   type    = "A"
   alias {

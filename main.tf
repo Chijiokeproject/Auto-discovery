@@ -5,20 +5,23 @@ locals {
 module "vpc" {
   source = "./module/vpc"
   name   = local.name
-  az1    = "eu-west-2a"
-  az2    = "eu-west-2b"
+  az1    = "eu-west-3a"
+  az2    = "eu-west-3b"
 }
 provider "aws" {
-  alias  = "london"
-  region = "eu-west-2"
+  alias  = "paris"
+  region = "eu-west-3"
 }
 data "aws_acm_certificate" "auto_acm_cert" {
-  domain      = "chijiokedevops.space"
-  statuses    = ["ISSUED"]
-  most_recent = true
+  domain              = "chijiokedevops.space"
+  statuses            = ["ISSUED"]
+  most_recent         = true
+  types               = ["AMAZON_ISSUED"]
+  key_types           = ["RSA_2048"]
 }
+
 data "aws_route53_zone" "zone_id" {
-  name         = var.domain
+  name         = "vault-zone"
   private_zone = false
 }
 

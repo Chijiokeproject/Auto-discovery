@@ -2,8 +2,8 @@
 set -euo pipefail  # Enable strict error handling
 
 # Set Variables
-BUCKET_NAME="chijioke-bucket-auto-discovery"
-AWS_REGION="eu-west-2"
+BUCKET_NAME="chijioke-bucket-auto-discovery-1"
+AWS_REGION="eu-west-3"
 PROFILE="auto-discovery"
 
 # Function to handle errors
@@ -44,7 +44,8 @@ echo "🌍 S3 Bucket: $BUCKET_NAME"
 # Uncomment if you want to provision Vault and Jenkins automatically
  echo "🚀 Provisioning Vault and Jenkins server..."
  cd ./vault-jenkins
- terraform init
+
+ terraform init 
  terraform fmt --recursive
  terraform validate
  terraform apply -auto-approve
