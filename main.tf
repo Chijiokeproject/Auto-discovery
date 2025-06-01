@@ -20,8 +20,8 @@ data "aws_acm_certificate" "auto_acm_cert" {
   key_types           = ["RSA_2048"]
 }
 
-data "aws_route53_zone" "auto-discovery_zone" {
-  name         = "vault-zone"
+data "aws_route53_zone" "auto-discovery-zone" {
+  name         = "chijiokedevops.space"
   private_zone = false
 }
 
