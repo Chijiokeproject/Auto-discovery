@@ -36,7 +36,7 @@ module "sonarqube" {
   public_subnets      = [module.vpc.pub_sub1_id, module.vpc.pub_sub2_id]
   nr-key              = var.nr-key
   nr-id               = var.nr-id
-  route53_zone_id     = data.aws_route53_zone.zone_id.zone_id
+  route53_zone_id     = data.aws_route53_zone.auto-discovery-zone.zone_id
   acm_certificate_arn = data.aws_acm_certificate.auto_acm_cert.arn
 }
 
