@@ -20,7 +20,7 @@ data "aws_acm_certificate" "auto_acm_cert" {
   key_types           = ["RSA_2048"]
 }
 
-data "aws_route53_zone" "zone_id" {
+data "aws_route53_zone" "auto-discovery_zone" {
   name         = "vault-zone"
   private_zone = false
 }
