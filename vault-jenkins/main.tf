@@ -3,31 +3,32 @@ locals {
 }
 
 # Create keypair resource
-resource "tls_private_key" "keypair" {
+resource "tls_private_key" "vault_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 resource "local_file" "private_key" {
-  content         = tls_private_key.keypair.private_key_pem
-  filename        = "${local.name}-key.pem"
+  content         = tls_private_key.vault_key.private_key_pem
+  filename        = "${path.module}/generated/auto-discovery-key.pem"
   file_permission = "400"
 }
 
-resource "aws_key_pair" "public_key" {
-  key_name   = "${local.name}-key"
-  public_key = tls_private_key.keypair.public_key_openssh
+
+resource "aws_key_pair" "vault_key" {
+  key_name   = "${local.name}vault-key"
+  public_key = tls_private_key.vault_key.public_key_openssh
 }
 
 #Creating kms key
-resource "aws_kms_key" "auto-kms-key" {
-  description             = "${local.name}-vault-kms-key" // the kms key 
-  deletion_window_in_days = 10                            // 10 days
-  enable_key_rotation     = true                          // true
+resource "aws_kms_key" "vault_key" {
+  description             = "Vault encryption key"
+  deletion_window_in_days = 10
+  enable_key_rotation     = true
 }
 # alias of the kms key
-resource "aws_kms_alias" "auto-kms-key" {
+resource "aws_kms_alias" "vault_alias" {
   name          = "alias/${local.name}-kms-key"
-  target_key_id = aws_kms_key.auto-kms-key.id
+  target_key_id = aws_kms_key.vault_key.id
   lifecycle {
     create_before_destroy = true
   }
@@ -35,7 +36,6 @@ resource "aws_kms_alias" "auto-kms-key" {
 
 resource "aws_iam_role" "vault_role" {
   name = "${local.name}-vault-role"
-
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -51,10 +51,9 @@ resource "aws_iam_role" "vault_role" {
 }
 
 # Create IAM Policy for Vault to access KMS
-resource "aws_iam_role_policy" "vault_kms_access" {
-  name = "${local.name}-vault_kms-access"
+resource "aws_iam_role_policy" "vault_kms_policy" {
+  name = "${local.name}-vault-kms-policy"
   role = aws_iam_role.vault_role.id
-
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -67,12 +66,12 @@ resource "aws_iam_role_policy" "vault_kms_access" {
           "kms:GenerateDataKey*",
           "kms:DescribeKey"
         ],
-        Resource = "${aws_kms_key.auto-kms-key.arn}"
+        Resource = "${aws_kms_key.vault_key.arn}"
       }
     ]
   })
 }
-resource "aws_iam_instance_profile" "vault-profile" {
+resource "aws_iam_instance_profile" "profile_vault" {
   name = "${local.name}-vault-profile"
   role = aws_iam_role.vault_role.name
 }
@@ -133,12 +132,12 @@ data "aws_ami" "ubuntu" {
 resource "aws_instance" "vault_server" {
   ami                  = data.aws_ami.ubuntu.id # Ubuntu in eu-west-2
   instance_type        = "t2.medium"
-  key_name             = aws_key_pair.public_key.key_name
+  key_name             = aws_key_pair.vault_key.key_name
   security_groups      = [aws_security_group.vault_sg.name]
-  iam_instance_profile = aws_iam_instance_profile.vault-profile.id
+  iam_instance_profile = aws_iam_instance_profile.profile_vault.id
   user_data = templatefile("./vault_userdata.sh", {
     var1 = "eu-west-3",
-    var2 = aws_kms_key.auto-kms-key.id
+    var2 = aws_kms_key.vault_key.id
   })
 
   tags = {
@@ -154,20 +153,30 @@ resource "time_sleep" "wait_3_min" {
 }
 
 #create null resource to fetch vault token
+#resource "null_resource" "fetch_token" {
+# depends_on = [time_sleep.wait_3_min]
+# create terraform provisioner to help fetch token file from the vault server
 resource "null_resource" "fetch_token" {
-  depends_on = [time_sleep.wait_3_min]
-  # create terraform provisioner to help fetch token file from the vault server
+  depends_on = [aws_instance.vault_server, time_sleep.wait_3_min]
+
   provisioner "local-exec" {
-    command = "scp -o StrictHostKeyChecking=no -i ./${local.name}-key.pem ubuntu@${aws_instance.vault_server.public_ip}:/home/ubuntu/token.txt ."
+    command = "scp -o StrictHostKeyChecking=no -i ./generated/auto-discovery-key.pem ubuntu@${aws_instance.vault_server.public_ip}:/home/ubuntu/token.txt ."
   }
+
   provisioner "local-exec" {
     when    = destroy
     command = "rm -f ./token.txt"
   }
 }
 
+# Fetch Route 53 Zone for DNS Validation
+data "aws_route53_zone" "auto-discovery-zone" {
+  name         = "chijiokedevops.space"
+  private_zone = false
+}
+
 # Create ACM certificate with DNS validation
-resource "aws_acm_certificate" "auto-acm-cert" {
+resource "aws_acm_certificate" "auto_acm_cert" {
   domain_name               = var.domain
   subject_alternative_names = ["*.${var.domain}"]
   validation_method         = "DNS"
@@ -179,17 +188,13 @@ resource "aws_acm_certificate" "auto-acm-cert" {
     Name = "${local.name}auto-acm-cert"
   }
 }
-# Fetch Route 53 Zone for DNS Validation
-data "aws_route53_zone" "vault-zones" {
-  name         = "chijiokedevops.space"
-  private_zone = false
-}
+
 
 
 # Fetch DNS Validation Records for ACM Certificate
 resource "aws_route53_record" "acm_validation_record" {
   for_each = {
-    for dvo in aws_acm_certificate.auto-acm-cert.domain_validation_options : dvo.domain_name => {
+    for dvo in aws_acm_certificate.auto_acm_cert.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
@@ -197,24 +202,24 @@ resource "aws_route53_record" "acm_validation_record" {
   }
 
   # Create DNS Validation Record for ACM Certificate
-  zone_id         = data.aws_route53_zone.vault-zone.zone_id
+  zone_id         = data.aws_route53_zone.auto-discovery-zone.zone_id
   allow_overwrite = true
   name            = each.value.name
   type            = each.value.type
   ttl             = 60
   records         = [each.value.record]
-  depends_on      = [aws_acm_certificate.auto-acm-cert]
+  depends_on      = [aws_acm_certificate.auto_acm_cert]
 }
 
 # Validate the ACM Certificate after DNS Record Creation
 resource "aws_acm_certificate_validation" "auto_cert_validation" {
-  certificate_arn         = aws_acm_certificate.auto-acm-cert.arn
+  certificate_arn         = aws_acm_certificate.auto_acm_cert.arn
   validation_record_fqdns = [for record in aws_route53_record.acm_validation_record : record.fqdn]
-  depends_on              = [aws_acm_certificate.auto-acm-cert]
+  depends_on              = [aws_acm_certificate.auto_acm_cert]
 }
 
 #Create Security Group for Vault Elastic Load Balancer
-resource "aws_security_group" "elb-vault-sg" {
+resource "aws_security_group" "elb_vault_sg" {
   name        = "elb-vault-sg"
   description = "Allow HTTPS"
 
@@ -240,7 +245,7 @@ resource "aws_security_group" "elb-vault-sg" {
 }
 
 # Create load balancer for Vault Server
-resource "aws_elb" "elb-vault" {
+resource "aws_elb" "elb_vault" {
   name               = "vault-elb"
   availability_zones = ["eu-west-3a", "eu-west-3b"]
 
@@ -249,7 +254,7 @@ resource "aws_elb" "elb-vault" {
     instance_protocol  = "http"
     lb_port            = 443
     lb_protocol        = "https"
-    ssl_certificate_id = aws_acm_certificate.auto-acm-cert.arn
+    ssl_certificate_id = aws_acm_certificate.auto_acm_cert.arn
   }
 
   health_check {
@@ -270,17 +275,14 @@ resource "aws_elb" "elb-vault" {
     Name = "${local.name}-elb-vault"
   }
 }
-
-
-
 # Create Route 53 A Record for Vault Server
-resource "aws_route53_record" "vault-record" {
-  zone_id = data.aws_route53_zone.vault-zone.zone_id
+resource "aws_route53_record" "vault_record" {
+  zone_id = data.aws_route53_zone.auto-discovery-zone.zone_id
   name    = "vault.${var.domain}"
   type    = "A"
   alias {
-    name                   = aws_elb.elb-vault.dns_name
-    zone_id                = aws_elb.elb-vault.zone_id
+    name                   = aws_elb.elb_vault.dns_name
+    zone_id                = aws_elb.elb_vault.zone_id
     evaluate_target_health = true
   }
 }
@@ -302,13 +304,13 @@ data "aws_ami" "redhat" {
     values = ["x86_64"]
   }
 }
-resource "aws_instance" "jenkins-server" {
+resource "aws_instance" "jenkins_server" {
   ami                         = data.aws_ami.redhat.id # redhat in eu-west-2
   instance_type               = "t2.medium"
-  key_name                    = aws_key_pair.public_key.id
+  key_name                    = aws_key_pair.vault_key.id
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
-  iam_instance_profile        = aws_iam_instance_profile.jenkins-profile.id
+  iam_instance_profile        = aws_iam_instance_profile.profile_jenkins.id
   root_block_device {
     volume_size = 30    # Size in GB
     volume_type = "gp3" # General Purpose SSD (recommended)
@@ -324,9 +326,8 @@ resource "aws_instance" "jenkins-server" {
   }
 }
 # Create IAM role for Jenkins
-resource "aws_iam_role" "jenkins-role" {
+resource "aws_iam_role" "jenkins_role" {
   name = "${local.name}-jenkins-role"
-
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -341,15 +342,21 @@ resource "aws_iam_role" "jenkins-role" {
   })
 }
 # Attach the policy to the role
-resource "aws_iam_role_policy_attachment" "jenkins-role-attachment" {
-  role       = aws_iam_role.jenkins-role.name
+resource "aws_iam_role_policy_attachment" "jenkins_role_attachment" {
+  role       = aws_iam_role.jenkins_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
+
 # Attach the policy to the role
-resource "aws_iam_instance_profile" "jenkins-profile" {
+resource "aws_iam_instance_profile" "profile_jenkins" {
   name = "${local.name}-jenkins-profile"
-  role = aws_iam_role.jenkins-role.name
+  role = aws_iam_role.jenkins_role.name
+
+  lifecycle {
+    ignore_changes = [role]
+  }
 }
+
 
 # Create jenkins security group
 resource "aws_security_group" "jenkins_sg" {
@@ -387,14 +394,14 @@ resource "aws_security_group" "jenkins_sg" {
 # Create elastic Load Balancer for Jenkins
 resource "aws_elb" "elb_jenkins" {
   name               = "elb-jenkins"
-  security_groups    = [aws_security_group.jenkins-elb-sg.id]
+  security_groups    = [aws_security_group.jenkins_elb_sg.id]
   availability_zones = ["eu-west-3a", "eu-west-3b"]
   listener {
     instance_port      = 8080
     instance_protocol  = "HTTP"
     lb_port            = 443
     lb_protocol        = "HTTPS"
-    ssl_certificate_id = aws_acm_certificate.auto-acm-cert.id
+    ssl_certificate_id = aws_acm_certificate.auto_acm_cert.id
   }
   health_check {
     healthy_threshold   = 3
@@ -403,7 +410,7 @@ resource "aws_elb" "elb_jenkins" {
     timeout             = 5
     target              = "TCP:8080"
   }
-  instances                   = [aws_instance.jenkins-server.id]
+  instances                   = [aws_instance.jenkins_server.id]
   cross_zone_load_balancing   = true
   idle_timeout                = 400
   connection_draining         = true
@@ -414,7 +421,7 @@ resource "aws_elb" "elb_jenkins" {
 }
 # Create Security group for the jenkins elb
 # 
-resource "aws_security_group" "jenkins-elb-sg" {
+resource "aws_security_group" "jenkins_elb_sg" {
   name        = "${local.name}-jenkins-elb-sg"
   description = "Allow HTTPS"
 
@@ -440,7 +447,7 @@ resource "aws_security_group" "jenkins-elb-sg" {
 
 # Create Route 53 record for jenkins server
 resource "aws_route53_record" "jenkins-record" {
-  zone_id = data.aws_route53_zone.vault-zone.zone_id
+  zone_id = data.aws_route53_zone.auto-discovery-zone.zone_id
   name    = "jenkins.${var.domain}"
   type    = "A"
   alias {
