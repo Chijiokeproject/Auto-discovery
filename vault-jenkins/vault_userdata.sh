@@ -92,12 +92,18 @@ EOT
 vault -autocomplete-install
 complete -C /usr/bin/vault vault
 
+mkdir -p generated
+chmod u+w generated
+
+
+
 # Notify once provisioned
 echo "Vault server provisioned successfully."
 # Start Vault service
 sudo systemctl start vault
 sudo systemctl enable vault
 sleep 20
+
 # #Set vault token/secret username and password
 touch /home/ubuntu/output.txt
 vault operator init > /home/ubuntu/output.txt
