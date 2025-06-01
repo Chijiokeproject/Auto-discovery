@@ -67,7 +67,7 @@ pipeline {
         }
     }
 
-    post {
+       post {
             script {
                 slackSend(
              always {
