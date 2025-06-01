@@ -148,6 +148,6 @@ resource "aws_key_pair" "public-key" {
   public_key = tls_private_key.key.public_key_openssh
    
    lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
