@@ -1,6 +1,6 @@
 
 #  RDS Subnet Group
-resource "aws_db_subnet_group" "auto_db_subnet_group" {
+resource "aws_db_subnet_group" "auto_1_db_subnet_group" {
   name        = "${var.name}-db_subnet"
   subnet_ids  = [var.pri-sub-1, var.pri-sub-2] # Use private subnets for security
   description = "Subnet group for Multi-AZ RDS deployment"
