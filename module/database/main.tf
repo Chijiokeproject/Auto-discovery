@@ -16,7 +16,7 @@ data "vault_generic_secret" "vault-secret" {
 
 resource "aws_db_instance" "auto_mysql_database" {
   identifier             = "${var.name}-db"
-  db_subnet_group_name   = aws_db_subnet_group.auto_db_subnet_group.name
+  db_subnet_group_name   = aws_db_subnet_group.auto_1_db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.RDS-sg.id]
   db_name                = "petadoption"
   # High Availability
