@@ -4,7 +4,7 @@ provider "aws" {
 
 provider "vault" {
   address = "https://vault.chijiokedevops.space"
-  token   = "s.jerGak5u1HYEtlzu5rbtgeiT"
+  token   = "s.DqMFxKe451aegD3vh3jzTKO3"
 }
 
 terraform {
