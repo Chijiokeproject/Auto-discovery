@@ -47,6 +47,7 @@ echo "🌍 S3 Bucket: $BUCKET_NAME"
 
  terraform init 
  terraform fmt --recursive
+ terraform import module.stage-envi.aws_route53_record.stage-record ZONEID_stage.chijiokedevops.space_A
  terraform validate
  terraform apply -auto-approve
  terraform output
