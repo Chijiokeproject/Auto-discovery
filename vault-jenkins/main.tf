@@ -9,10 +9,9 @@ resource "tls_private_key" "vault_key" {
 }
 resource "local_file" "private_key" {
   content         = tls_private_key.vault_key.private_key_pem
-  filename        = "${path.module}/generated/auto-discovery-key.pem"
+  filename        = "${local.name}-key.pem"
   file_permission = "400"
 }
-
 
 resource "aws_key_pair" "vault_key" {
   key_name   = "${local.name}vault-key"
@@ -130,11 +129,12 @@ data "aws_ami" "ubuntu" {
 }
 # Create Vault Server Instance
 resource "aws_instance" "vault_server" {
-  ami                  = data.aws_ami.ubuntu.id # Ubuntu in eu-west-2
+  ami                  = data.aws_ami.ubuntu.id
   instance_type        = "t2.medium"
   key_name             = aws_key_pair.vault_key.key_name
   security_groups      = [aws_security_group.vault_sg.name]
   iam_instance_profile = aws_iam_instance_profile.profile_vault.id
+
   user_data = templatefile("./vault_userdata.sh", {
     var1 = "eu-west-3",
     var2 = aws_kms_key.vault_key.id
@@ -144,6 +144,7 @@ resource "aws_instance" "vault_server" {
     Name = "${local.name}-VaultServer"
   }
 }
+
 
 
 #create a time sleep resource that allow terraform to wait till vault server is ready
@@ -160,7 +161,7 @@ resource "null_resource" "fetch_token" {
   depends_on = [aws_instance.vault_server, time_sleep.wait_3_min]
 
   provisioner "local-exec" {
-    command = "scp -o StrictHostKeyChecking=no -i ./generated/auto-discovery-key.pem ubuntu@${aws_instance.vault_server.public_ip}:/home/ubuntu/token.txt ."
+    command = "scp -o StrictHostKeyChecking=no -i auto-discovery-key.pem ubuntu@${aws_instance.vault_server.public_ip}:/home/ubuntu/token.txt ."
   }
 
   provisioner "local-exec" {
@@ -304,18 +305,21 @@ data "aws_ami" "redhat" {
     values = ["x86_64"]
   }
 }
+# create jennkins instance
 resource "aws_instance" "jenkins_server" {
-  ami                         = data.aws_ami.redhat.id # redhat in eu-west-2
+  ami                         = data.aws_ami.redhat.id
   instance_type               = "t2.medium"
-  key_name                    = aws_key_pair.vault_key.id
+  key_name                    = aws_key_pair.vault_key.key_name
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
   iam_instance_profile        = aws_iam_instance_profile.profile_jenkins.id
+
   root_block_device {
-    volume_size = 30    # Size in GB
-    volume_type = "gp3" # General Purpose SSD (recommended)
-    encrypted   = true  # Enable encryption (best practice)
+    volume_size = 30
+    volume_type = "gp3"
+    encrypted   = true
   }
+
   user_data = templatefile("./jenkins-userdata.sh", {
     nr-key    = "",
     nr-acc-id = 6496342
@@ -325,6 +329,7 @@ resource "aws_instance" "jenkins_server" {
     Name = "${local.name}-jenkins-server"
   }
 }
+
 # Create IAM role for Jenkins
 resource "aws_iam_role" "jenkins_role" {
   name = "${local.name}-jenkins-role"

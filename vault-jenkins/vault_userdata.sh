@@ -92,8 +92,8 @@ EOT
 vault -autocomplete-install
 complete -C /usr/bin/vault vault
 
-mkdir -p generated
-chmod u+w generated
+#mkdir -p generated
+#chmod u+w generated
 
 
 
