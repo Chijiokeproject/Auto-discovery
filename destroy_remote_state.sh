@@ -8,6 +8,7 @@ PROFILE="auto-discovery"
 
 # destroy vault and jenkins server
 cd ./vault-jenkins
+terraform init -reconfigure
 terraform destroy -auto-approve
 terraform output
 
