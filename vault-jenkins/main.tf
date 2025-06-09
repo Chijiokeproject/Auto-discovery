@@ -7,10 +7,16 @@ resource "tls_private_key" "vault_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
+#resource "local_file" "private_key" {
+#content         = tls_private_key.vault_key.private_key_pem
+#filename        = "${local.name}-key.pem"
+#file_permission = "400"
+#}
+
 resource "local_file" "private_key" {
   content         = tls_private_key.vault_key.private_key_pem
-  filename        = "${local.name}-key.pem"
-  file_permission = "400"
+  filename        = "${local.name}/-key.pem"
+  file_permission = "0600"
 }
 
 resource "aws_key_pair" "vault_key" {

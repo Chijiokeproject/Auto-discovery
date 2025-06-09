@@ -17,7 +17,7 @@ sudo ln -svf /usr/local/bin/aws /usr/bin/aws
 # execute cmd as ec2-user
 sudo su -c "aws configure set aws_access_key_id ${aws_iam_access_key.ansible-user-key.id}" ec2-user
 sudo su -c "aws configure set aws_secret_access_key ${aws_iam_access_key.ansible-user-key.secret}" ec2-user
-sudo su -c "aws configure set default.region eu-west-2" ec2-user
+sudo su -c "aws configure set default.region eu-west-3" ec2-user
 sudo su -c "aws configure set default.output text" ec2-user
 
 # Create export variables for access keys
