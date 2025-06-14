@@ -82,3 +82,11 @@ resource "aws_iam_group_policy_attachment" "ansible-policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
   group      = aws_iam_group.ansible-group.name
 }
+
+resource "null_resource" "ansible-setup" {
+  provisioner "local-exec" {
+    command = <<EOT
+      aws s3 cp --recursive ${path.module}/script/ s3://chijioke-bucket-auto-discovery-1/ansible-script/ 
+    EOT
+  } 
+}
