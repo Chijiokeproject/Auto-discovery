@@ -190,8 +190,6 @@ resource "aws_acm_certificate" "auto_acm_cert" {
   }
 }
 
-
-
 # Fetch DNS Validation Records for ACM Certificate
 resource "aws_route53_record" "acm_validation_record" {
   for_each = {
@@ -248,7 +246,8 @@ resource "aws_security_group" "elb_vault_sg" {
 # Create load balancer for Vault Server
 resource "aws_elb" "elb_vault" {
   name               = "vault-elb"
-  availability_zones = ["eu-west-3a", "eu-west-3b"]
+  availability_zones = ["eu-west-3a", "eu-west-3b", "eu-west-3c"]
+  security_groups    = [aws_security_group.elb_vault_sg.id]
 
   listener {
     instance_port      = 8200
@@ -305,7 +304,7 @@ data "aws_ami" "redhat" {
     values = ["x86_64"]
   }
 }
-# create jennkins instance
+# create jenkins instance
 resource "aws_instance" "jenkins_server" {
   ami                         = data.aws_ami.redhat.id
   instance_type               = "t2.medium"
@@ -321,8 +320,8 @@ resource "aws_instance" "jenkins_server" {
   }
 
   user_data = templatefile("./jenkins-userdata.sh", {
-    nr-key    = "",
-    nr-acc-id = 6496342
+    nr-key    = ""
+    nr-acc-id = ""
   })
 
   tags = {
@@ -400,13 +399,13 @@ resource "aws_security_group" "jenkins_sg" {
 resource "aws_elb" "elb_jenkins" {
   name               = "elb-jenkins"
   security_groups    = [aws_security_group.jenkins_elb_sg.id]
-  availability_zones = ["eu-west-3a", "eu-west-3b"]
+  availability_zones = ["eu-west-3a", "eu-west-3b", "eu-west-3c"]
   listener {
     instance_port      = 8080
     instance_protocol  = "HTTP"
     lb_port            = 443
     lb_protocol        = "HTTPS"
-    ssl_certificate_id = aws_acm_certificate.auto_acm_cert.id
+    ssl_certificate_id = aws_acm_certificate.auto_acm_cert.arn
   }
   health_check {
     healthy_threshold   = 3
@@ -425,17 +424,10 @@ resource "aws_elb" "elb_jenkins" {
   }
 }
 # Create Security group for the jenkins elb
-# 
 resource "aws_security_group" "jenkins_elb_sg" {
   name        = "${local.name}-jenkins-elb-sg"
   description = "Allow HTTPS"
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
   ingress {
     from_port   = 443
     to_port     = 443
