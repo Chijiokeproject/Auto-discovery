@@ -104,7 +104,7 @@ module "prod-envi" {
   pub-subnet2  = module.vpc.pub_sub2_id
   acm-cert-arn = data.aws_acm_certificate.auto_acm_cert.arn
   domain       = var.domain
-  nexus_ip     = module.nexus.nexus_ip
+  nexus-ip     = module.nexus.nexus_ip
   nr-key       = var.nr-key
   nr-acct-id   = var.nr-id  
   ansible      =  module.ansible.ansible_sg
@@ -122,7 +122,7 @@ module "stage-envi" {
   pub-subnet2  = module.vpc.pub_sub2_id
   acm-cert-arn = data.aws_acm_certificate.auto_acm_cert.arn
   domain       = var.domain
-  nexus_ip     = module.nexus.nexus_ip
+  nexus-ip     = module.nexus.nexus_ip
   nr-key       = var.nr-key
   nr-acct-id   = var.nr-id  
   ansible      =  module.ansible.ansible_sg
