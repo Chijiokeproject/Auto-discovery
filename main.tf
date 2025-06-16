@@ -52,7 +52,8 @@ module "bastion" {
 module "nexus" {
   source              = "./module/nexus"
   name                = local.name
-  keypair             = module.vpc.public_key
+  #keypair             = module.vpc.public_key
+  keypair             = var.keypair
   vpc                 = module.vpc.vpc_id
   subnet1_id          = module.vpc.pub_sub1_id
   subnet2_id          = module.vpc.pub_sub2_id
