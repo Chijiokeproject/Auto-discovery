@@ -1,4 +1,4 @@
-variable "key" {}
+variable "keypair" {}
 variable "name" {}
 variable "subnet_id" {}
 variable "bastion_sg" {}
