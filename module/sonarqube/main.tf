@@ -46,13 +46,37 @@ data "aws_ami" "ubuntu" {
 }
 
 # Create Sonarqube Server
+#resource "aws_instance" "sonarqube-server" {
+ # ami                         = data.aws_ami.ubuntu.id #ubuntu 
+  #instance_type               = "t2.medium"
+  #vpc_security_group_ids      = [aws_security_group.sonarqube_sg.id]
+  #key_name                    = var.key
+  #subnet_id                   = var.subnet_id
+  #user_data                   = local.userdata
+  #iam_instance_profile        = aws_iam_instance_profile.sonarqube_profile.name
+  #associate_public_ip_address = true
+  #root_block_device {
+   # volume_size = 20
+    #volume_type = "gp3"
+    #encrypted   = true
+  #}
+  #metadata_options {
+   # http_tokens = "required"
+  #}
+
+  #tags = {
+  #  Name = "${var.name}-sonarqube-server"
+  #}
+#}
+
+# Create Sonarqube Server
 resource "aws_instance" "sonarqube-server" {
-  ami                         = data.aws_ami.ubuntu.id #ubuntu 
+  ami                         = data.aws_ami.ubuntu.id # Use the latest Ubuntu AMI
   instance_type               = "t2.medium"
   vpc_security_group_ids      = [aws_security_group.sonarqube_sg.id]
-  key_name                    = var.key
+  key_name                    = var.keypair
   subnet_id                   = var.subnet_id
-  user_data                   = local.userdata
+  user_data                   = file("${path.module}/sonar_userdata.sh")
   iam_instance_profile        = aws_iam_instance_profile.sonarqube_profile.name
   associate_public_ip_address = true
   root_block_device {
@@ -68,6 +92,9 @@ resource "aws_instance" "sonarqube-server" {
     Name = "${var.name}-sonarqube-server"
   }
 }
+
+
+
 
 # ELB Security Group
 resource "aws_security_group" "elb_sonar_sg" {
