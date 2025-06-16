@@ -54,7 +54,7 @@ data "aws_ami" "redhat" {
   }
 }
 
-resource "aws_instance" "nexus" {
+resource "aws_instance" "nexus_server" {
   ami                         = data.aws_ami.redhat.id
   instance_type               = "t2.medium"
   subnet_id                   = var.subnet
@@ -114,7 +114,7 @@ resource "aws_elb" "elb_nexus" {
     timeout             = 5
     target              = "TCP:8081"
   }
-  instances                   = [aws_instance.nexus.id]
+  instances                   = [aws_instance.nexus_server.id]
   cross_zone_load_balancing   = true
   idle_timeout                = 400
   connection_draining         = true
@@ -143,7 +143,7 @@ resource "aws_route53_record" "nexus-record" {
 }
 
 resource "null_resource" "update_jenkins" {
-  depends_on = [aws_instance.nexus-server]
+  depends_on = [aws_instance.nexus_server]
 
   provisioner "local-exec" {
     command = <<-EOF
