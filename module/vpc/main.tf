@@ -159,15 +159,10 @@ resource "aws_route_table_association" "ass-private_subnet_2" {
 
 
 #creating keypair RSA key of size 4096 bits
-resource "tls_private_key" "keypair" {
+resource "tls_private_key" "key" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
-
-#resource "tls_private_key" "ssh" {
-  #algorithm = "RSA"
-  #rsa_bits  = 4096
-#}
 
 # Creating private key
 resource "local_file" "private-key" {
@@ -178,7 +173,7 @@ resource "local_file" "private-key" {
 
 # Creating public key 
 resource "aws_key_pair" "public-key" {
-  key_name   = "${var.name}-infra-key"
+  key_name   = "${var.name}-key"
   public_key = tls_private_key.keypair.public_key_openssh
    }
 
