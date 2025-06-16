@@ -1,4 +1,4 @@
-output "nexus-public-ip" {
+output "nexus_public_ip" {
   value = module.nexus.nexus_public_ip
 }
 

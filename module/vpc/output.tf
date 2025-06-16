@@ -22,10 +22,10 @@ output "public_key" {
 }
 
 output "private_key" {
-  value = tls_private_key.keypair.private_key_pem
+  value = tls_private_key.key.private_key_pem
 }
 
 output "keypair_name" {
-  value = aws_key_pair.keypair.key_name
+  value = aws_key_pair.public-key.key_name
 }
 
