@@ -76,8 +76,8 @@ resource "aws_autoscaling_group" "stage_autoscaling_grp" {
     id      = aws_launch_template.stage_lnch_tmpl.id
     version = "$Latest"
   }
-  vpc_zone_identifier = [var.pri-subnet1, var.pri-subnet2]
-  target_group_arns   = [aws_lb_target_group.stage-target-group.arn]
+  vpc_zone_identifier = [var.pri_subnet1, var.pri_subnet2]
+  target_group_arns   = [aws_lb_target_group.stage_target_group.arn]
 
   tag {
     key                 = "Name"
@@ -85,6 +85,7 @@ resource "aws_autoscaling_group" "stage_autoscaling_grp" {
     propagate_at_launch = true
   }
 }
+
 # Created autoscaling group policy
 resource "aws_autoscaling_policy" "stage-asg-policy" {
   name                   = "asg-policy"
