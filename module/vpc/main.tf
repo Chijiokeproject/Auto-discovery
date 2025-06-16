@@ -180,19 +180,6 @@ resource "local_file" "private-key" {
 resource "aws_key_pair" "public-key" {
   key_name   = "${var.name}-infra-key"
   public_key = tls_private_key.keypair.public_key_openssh
-   
-   lifecycle {
-    prevent_destroy = false
-  }
-}
+   }
 
-#resource "aws_key_pair" "generated" {
- # key_name   = "${var.name}-key"
-  #public_key = tls_private_key.ssh.public_key_openssh
-
-   #  lifecycle {
-    #prevent_destroy = false
- #
-  
-#}
 
