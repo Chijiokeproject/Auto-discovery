@@ -29,8 +29,8 @@ ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
 ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
 User=sonar
 Group=sonar
-Restart=on-failure
-LimitNOFILE=65536
+Restart=always
+LimitNOFILE=4096
 
 [Install]
 WantedBy=multi-user.target
@@ -41,7 +41,7 @@ systemctl daemon-reexec
 systemctl daemon-reload
 systemctl enable sonarqube
 systemctl start sonarqube
-
+EOF
 # Configure Nginx as reverse proxy
 cat <<EONGINX > /etc/nginx/sites-available/sonarqube
 server {
