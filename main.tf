@@ -87,7 +87,7 @@ module "ansible" {
   deployment = "./module/ansible/deployment.yml" # Path to the deployment file
   prod-bashscript = "./module/ansible/prod-bashscript.sh" # Path to the prod bash script
   stage-bashscript = "./module/ansible/stage-bashscript.sh" # Path to the stage bash script
-  nexus_ip = module.nexus.nexus_ip
+  nexus-ip = module.nexus.nexus_ip
   nr-key = var.nr-key
   nr-acc-id = var.nr-id
 }
