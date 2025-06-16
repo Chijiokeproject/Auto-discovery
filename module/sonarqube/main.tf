@@ -46,7 +46,7 @@ data "aws_ami" "ubuntu" {
 }
 
 # Create Sonarqube Server
-resource "aws_instance" "sonarqube-server" {
+resource "aws_instance" "sonarqube_server" {
   ami                         = data.aws_ami.ubuntu.id # Use the latest Ubuntu AMI
   instance_type               = "t2.medium"
   vpc_security_group_ids      = [aws_security_group.sonarqube_sg.id]
