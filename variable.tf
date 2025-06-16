@@ -9,7 +9,6 @@ variable "nr-key" {
 variable "nr-id" {
   default = 6360298
 }
-
 variable "keypair" {
   description = "SSH Key Pair name used for Nexus and other EC2s"
   type        = string

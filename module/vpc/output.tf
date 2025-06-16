@@ -22,7 +22,7 @@ output "public_key" {
 }
 
 ooutput "private_key" {
-  value = tls_private_key.key.private_key_pem
+  value = tls_private_key.keypair.private_key_pem
 }
 
 output "keypair_name" {

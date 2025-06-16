@@ -159,7 +159,7 @@ resource "aws_route_table_association" "ass-private_subnet_2" {
 
 
 #creating keypair RSA key of size 4096 bits
-resource "tls_private_key" "key" {
+resource "tls_private_key" "keypair" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
