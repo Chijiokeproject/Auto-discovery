@@ -4,8 +4,8 @@ output "sonarqube_public_ip" {
 output "bastion-public-ip" {
   value = module.bastion.bastion_public_ip
 }
-output "nexus_private_ip" {
-  value = module.nexus.nexus_private_ip
+output "nexus_ip" {
+  value = aws_instance.nexus.private_ip
 }
 
 output "nexus_public_ip" {
