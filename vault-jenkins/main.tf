@@ -321,7 +321,7 @@ resource "aws_instance" "jenkins_server" {
 
   user_data = templatefile("./jenkins-userdata.sh", {
     nr-key    = ""
-    nr-acc-id = 6496342
+    nr-acc-id = ""
   })
 
   tags = {
