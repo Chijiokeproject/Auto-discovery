@@ -1,108 +1,67 @@
 #!/bin/bash
-
 set -e
 
-# === CONFIGURATION ===
-SONAR_VERSION="25.5.0.107428"
-SONAR_USER="sonaruser"
-SONAR_DIR="/opt/sonarqube"
-DB_USER="sonar"
-DB_PASSWORD="StrongPassword123"
-DB_NAME="sonarqube"
-SONAR_ZIP="sonarqube-${SONAR_VERSION}.zip"
-SONAR_URL="https://binaries.sonarsource.com/Distribution/sonarqube/${SONAR_ZIP}"
+# Update and install dependencies
+apt update -y
+apt install -y openjdk-17-jdk unzip wget gnupg2 nginx
 
+# Create a dedicated SonarQube user
+useradd -m -d /opt/sonarqube -s /bin/bash sonar
+echo 'sonar ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# === INSTALL DEPENDENCIES ===
-apt update
-apt install -y openjdk-17-jdk unzip wget postgresql ufw
-
-# === CREATE SONAR SYSTEM USER WITHOUT LOGIN ===
-useradd -r -s /bin/false $SONAR_USER
-
-# === DOWNLOAD AND EXTRACT SONARQUBE ===
+# Download and install SonarQube
 cd /opt
-wget $SONAR_URL
-unzip $SONAR_ZIP
+SONAR_VERSION="10.5.1.90531"
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-${SONAR_VERSION}.zip
+unzip sonarqube-${SONAR_VERSION}.zip
 mv sonarqube-${SONAR_VERSION} sonarqube
-chown -R $SONAR_USER:$SONAR_USER $SONAR_DIR
+chown -R sonar:sonar /opt/sonarqube
 
-# === CONFIGURE POSTGRESQL ===
-sudo -u postgres psql <<EOF
-CREATE USER $DB_USER WITH ENCRYPTED PASSWORD '${DB_PASSWORD}';
-CREATE DATABASE $DB_NAME OWNER $DB_USER;
-GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
-EOF
-
-# === CONFIGURE sonar.properties ===
-SONAR_PROP="$SONAR_DIR/conf/sonar.properties"
-sed -i "s|#sonar.jdbc.username=.*|sonar.jdbc.username=${DB_USER}|" $SONAR_PROP
-sed -i "s|#sonar.jdbc.password=.*|sonar.jdbc.password=${DB_PASSWORD}|" $SONAR_PROP
-sed -i "s|#sonar.jdbc.url=.*|sonar.jdbc.url=jdbc:postgresql://localhost/${DB_NAME}|" $SONAR_PROP
-
-# === INCREASE FILE LIMITS ===
-echo "$SONAR_USER soft nofile 65536" >> /etc/security/limits.conf
-echo "$SONAR_USER hard nofile 65536" >> /etc/security/limits.conf
-echo "vm.max_map_count=262144" >> /etc/sysctl.conf
-sysctl -w vm.max_map_count=262144
-
-# === CREATE SYSTEMD SERVICE ===
+# Setup systemd service
 cat <<EOF > /etc/systemd/system/sonarqube.service
 [Unit]
 Description=SonarQube service
-After=syslog.target network.target postgresql.service
+After=syslog.target network.target
 
 [Service]
 Type=forking
-ExecStart=$SONAR_DIR/bin/linux-x86-64/sonar.sh start
-ExecStop=$SONAR_DIR/bin/linux-x86-64/sonar.sh stop
-User=$SONAR_USER
-Group=$SONAR_USER
+ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+User=sonar
+Group=sonar
+Restart=on-failure
 LimitNOFILE=65536
-LimitNPROC=4096
-Restart=always
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-ufw allow 9000/tcp
-
-# === ENABLE AND START SONARQUBE ===
+# Enable and start SonarQube
 systemctl daemon-reexec
 systemctl daemon-reload
 systemctl enable sonarqube
 systemctl start sonarqube
 
-# === DONE ===
-echo "SonarQube $SONAR_VERSION installed and running"
-
-
-# ====== INSTALL NGINX ===========
-
-apt update
-apt install -y nginx
-
-# === Configure NGINX for SonarQube ===
-cat <<EOF > /etc/nginx/sites-available/sonarqube
+# Configure Nginx as reverse proxy
+cat <<EONGINX > /etc/nginx/sites-available/sonarqube
 server {
-    listen 80;
-    server_name sonarqube.set30.site;
+    listen 443 ssl;
+    server_name sonar.${var.domain};
+
+    ssl_certificate     /etc/ssl/certs/ssl-cert-snakeoil.pem;
+    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
 
     location / {
-        proxy_pass http://localhost:9000;
+        proxy_pass http://127.0.0.1:9000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        client_max_body_size 100M;
     }
-
-    access_log /var/log/nginx/sonarqube_access.log;
-    error_log /var/log/nginx/sonarqube_error.log;
 }
-EOF
+EONGINX
 
-# Enable the site and restart NGINX
-ln -s /etc/nginx/sites-available/sonarqube /etc/nginx/sites-enabled/
-nginx -t && systemctl restart nginx
+# Enable Nginx config
+ln -s /etc/nginx/sites-available/sonarqube /etc/nginx/sites-enabled/sonarqube
+rm /etc/nginx/sites-enabled/default
+systemctl restart nginx
