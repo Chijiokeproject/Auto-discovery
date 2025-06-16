@@ -21,7 +21,7 @@ output "public_key" {
   value = aws_key_pair.public-key.key_name
 }
 
-ooutput "private_key" {
+output "private_key" {
   value = tls_private_key.keypair.private_key_pem
 }
 
