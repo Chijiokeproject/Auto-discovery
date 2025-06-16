@@ -27,7 +27,7 @@ data "aws_route53_zone" "auto-discovery-zone" {
 
 module "sonarqube" {
   source              = "./module/sonarqube"
-  key                 = module.vpc.public_key
+  keypair             = module.vpc.public_key
   name                = local.name
   subnet_id           = module.vpc.pub_sub1_id
   bastion_sg          = module.bastion.bastion_sg
