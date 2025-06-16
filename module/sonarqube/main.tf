@@ -52,8 +52,7 @@ resource "aws_instance" "sonarqube-server" {
   vpc_security_group_ids      = [aws_security_group.sonarqube_sg.id]
   key_name                    = var.keypair
   subnet_id                   = var.subnet_id
-  user_data                   = local.userdata
-  iam_instance_profile        = aws_iam_instance_profile.sonarqube_profile.name
+  user_data                   = file("${path.module}/sonar_userdata.sh")
   associate_public_ip_address = true
   root_block_device {
     volume_size = 20
@@ -78,12 +77,12 @@ resource "aws_security_group" "elb_sonar_sg" {
   description = "Allow HTTPS"
   vpc_id      = var.vpc_id
 
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+ingress {
+  from_port       = 9000
+  to_port         = 9000
+  protocol        = "tcp"
+  security_groups = [aws_security_group.elb_sonar_sg.id]
+}
 
   egress {
     from_port   = 0
