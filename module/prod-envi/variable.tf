@@ -12,7 +12,8 @@ variable "nr-key" {}
 variable "nr-acct-id" {}
 variable "ansible" {}
 variable "target_group_arn" {
-  type = string
+  description = "Target group ARN for the load balancer"
+  type        = string
 }
 variable "acm-cert-arn" {
   type        = string

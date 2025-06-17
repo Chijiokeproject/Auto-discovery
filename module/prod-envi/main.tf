@@ -171,7 +171,7 @@ resource "aws_lb_listener" "prod_load_balancer_listener_https" {
   certificate_arn   = var.acm-cert-arn
   default_action {
     type             = "forward"
-    target_group_arn = var.target_group_arns
+    target_group_arn = var.target_group_arn
   }
 }
 # Create Route 53 record for prod server

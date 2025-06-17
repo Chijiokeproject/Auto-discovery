@@ -10,3 +10,6 @@ output "nexus_ip" {
 output "nexus_public_ip" {
   value = module.nexus.nexus_public_ip
 }
+output "target_group_arn" {
+  value = aws_lb_target_group.prod_target_group.arn
+}
