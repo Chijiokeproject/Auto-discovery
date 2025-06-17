@@ -6,7 +6,6 @@ variable "pri-subnet1" {}
 variable "pri-subnet2" {}
 variable "pub-subnet1" {}
 variable "pub-subnet2" {}
-variable "acm-cert-arn" {}
 variable "domain" {}
 variable "nexus-ip" {}
 variable "nr-key" {}
