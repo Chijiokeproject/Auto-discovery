@@ -76,7 +76,7 @@ resource "aws_autoscaling_group" "prod_autoscaling_grp" {
     version = "$Latest"
   }
   vpc_zone_identifier = [var.pri-subnet1, var.pri-subnet2]
-  target_group_arns   = [aws_lb_target_group.prod-target-group.arn]
+  target_group_arn = var.target_group_arn
 
   tag {
     key                 = "Name"
