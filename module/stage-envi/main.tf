@@ -161,7 +161,7 @@ resource "aws_lb_listener" "stage_load_balancer_listener_http" {
   protocol          = "HTTP"
   default_action {
     type             = "forward"
-    target_group_arns = aws_lb_target_group.stage-target-group.arn
+    target_group_arn = var.target_group_arn
   }
 }
 # Create load balance listener for https
