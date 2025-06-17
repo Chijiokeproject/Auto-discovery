@@ -12,6 +12,11 @@ variable "nexus-ip" {}
 variable "nr-key" {}
 variable "nr-acct-id" {}
 variable "ansible" {}
-variable "target_group_arns" {
-  type = list(string)
+variable "target_group_arn" {
+  type = string
+}
+
+variable "acm-cert-arn" {
+  type        = string
+  description = "ARN of the SSL certificate for HTTPS listener"
 }

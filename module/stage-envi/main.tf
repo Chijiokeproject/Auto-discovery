@@ -160,7 +160,7 @@ resource "aws_lb_listener" "stage_load_balancer_listener_http" {
   protocol          = "HTTP"
   default_action {
     type             = "forward"
-    target_group_arns = var.target_group_arns
+    target_group_arn = var.target_group_arn
   }
 }
 # Create load balance listener for https
@@ -172,7 +172,7 @@ resource "aws_lb_listener" "stage_load_balancer_listener_https" {
   certificate_arn   = var.acm-cert-arn
   default_action {
     type             = "forward"
-    target_group_arns = var.target_group_arns
+    target_group_arn = var.target_group_arns
   }
 }
 # Create Route 53 record for stage server
