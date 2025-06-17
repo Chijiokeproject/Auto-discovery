@@ -108,7 +108,7 @@ module "prod-envi" {
   nr-key       = var.nr-key
   nr-acct-id   = var.nr-id  
   ansible      =  module.ansible.ansible_sg
-  target_group_arns   = [aws_lb_target_group.prod_target_group.arn]
+  target_group_arn   = [aws_lb_target_group.prod_target_group.arn]
 }
 
 module "stage-envi" {
