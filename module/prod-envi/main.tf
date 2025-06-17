@@ -134,7 +134,7 @@ resource "aws_security_group" "prod-elb-sg" {
 }
 
 #Create Target group for load Balancer
-resource "aws_lb_target_group" "prod-target-group" {
+resource "aws_lb_target_group" "prod_target_group" {
   name        = "${var.name}-prod-tg"
   port        = 8080
   protocol    = "HTTP"
@@ -159,7 +159,7 @@ resource "aws_lb_listener" "prod_load_balancer_listener_http" {
   protocol          = "HTTP"
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.prod-target-group.arn
+    target_group_arns = aws_lb_target_group.prod-target-group.arn
   }
 }
 # Create load balance listener for https
