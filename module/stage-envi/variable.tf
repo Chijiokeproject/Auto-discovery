@@ -12,3 +12,7 @@ variable "nexus-ip" {}
 variable "nr-key" {}
 variable "nr-acct-id" {}
 variable "ansible" {}
+variable "target_group_arns" {
+  type        = string
+  description = "ARN of the target group to associate with the Auto Scaling Group"
+}
