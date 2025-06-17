@@ -68,9 +68,6 @@ resource "aws_instance" "sonarqube_server" {
   }
 }
 
-
-
-
 # ELB Security Group
 resource "aws_security_group" "elb_sonar_sg" {
   name        = "${var.name}-elb-sonar-sg"
