@@ -3,13 +3,13 @@ variable "vpc-id" {}
 variable "bastion_sg" {}
 variable "key-name" {}
 variable "pri-subnet1" {}
-variable "pri-subnet2" {}
-variable "pub-subnet1" {}
-variable "pub-subnet2" {}
+variable "pri_subnet2" {}
+variable "pub_subnet1" {}
+variable "pub_subnet2" {}
 variable "domain" {}
 variable "nexus-ip" {}
-variable "nr-key" {}
-variable "nr-acct-id" {}
+variable "nr_key" {}
+variable "nr_acct_id" {}
 variable "ansible" {}
 variable "target_group_arn" {
   description = "Target group ARN for the load balancer"
