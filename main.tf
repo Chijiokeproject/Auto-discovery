@@ -124,7 +124,7 @@ module "stage-envi" {
   domain       = var.domain
   nexus-ip     = module.nexus.nexus_ip
   nr-key       = var.nr-key
-  nr-acct_id   = var.nr-id  
+  nr-acct-id   = var.nr-id  
   ansible      =  module.ansible.ansible_sg
 }
 
