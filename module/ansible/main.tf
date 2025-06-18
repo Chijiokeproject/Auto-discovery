@@ -16,7 +16,7 @@ data "aws_ami" "redhat" {
   }
 }
 #Creating ansible security group
-resource "aws_security_group" "ansible_sg" {
+resource "aws_security_group" "ansible-sg" {
   name        = "${var.name}ansible-sg"
   description = "Allow ssh"
   vpc_id      = var.vpc
@@ -45,7 +45,7 @@ resource "aws_instance" "ansible_server" {
   ami                    = data.aws_ami.redhat.id #rehat 
   instance_type          = "t2.micro"
   iam_instance_profile   = aws_iam_instance_profile.ansible_profile.name
-  vpc_security_group_ids = [aws_security_group.ansible_sg.id]
+  vpc_security_group_ids = [aws_security_group.ansible-sg.id]
   key_name               = var.keypair
   subnet_id              = var.subnet_id
   user_data              = local.ansible_userdata
@@ -63,7 +63,7 @@ resource "aws_instance" "ansible_server" {
 }
 
 # Create IAM role for ansible
-resource "aws_iam_role" "ansible_role" {
+resource "aws_iam_role" "ansible-role" {
   name = "ansible-discovery-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -77,17 +77,17 @@ resource "aws_iam_role" "ansible_role" {
   })
 }
 # Attach the EC2 full access policy to the role
-resource "aws_iam_role_policy_attachment" "ec2_policy" {
+resource "aws_iam_role_policy_attachment" "ec2-policy" {
   role       = aws_iam_role.ansible-role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
 }
 # Attach S3 full access policy to the role
-resource "aws_iam_role_policy_attachment" "s3_policy" {
+resource "aws_iam_role_policy_attachment" "s3-policy" {
   role       = aws_iam_role.ansible-role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 # Create IAM instance profile for ansible
-resource "aws_iam_instance_profile" "ansible_profile" {
+resource "aws_iam_instance_profile" "ansible-profile" {
   name = "ansible-discovery-profile"
   role = aws_iam_role.ansible-role.name
 }
