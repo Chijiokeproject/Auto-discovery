@@ -58,8 +58,8 @@ module "nexus" {
   subnet1_id          = module.vpc.pub_sub1_id
   subnet2_id          = module.vpc.pub_sub2_id
   bastion_sg          = module.bastion.bastion_sg
-  nr_key              = var.nr_key
-  nr_id               = var.nr_id
+  nr-key              = var.nr-key
+  nr-id               = var.nr-id
   domain              = var.domain
   subnet              = module.vpc.pub_sub1_id
   acm_certificate_arn = data.aws_acm_certificate.auto_acm_cert.arn
@@ -87,9 +87,9 @@ module "ansible" {
   deployment = "./module/ansible/deployment.yml" # Path to the deployment file
   prod-bashscript = "./module/ansible/prod-bashscript.sh" # Path to the prod bash script
   stage-bashscript = "./module/ansible/stage-bashscript.sh" # Path to the stage bash script
-  nexus_ip = module.nexus.nexus_ip
-  nr_key = var.nr_key
-  nr_acc-id = var.nr_id
+  nexus-ip = module.nexus.nexus_ip
+  nr-key = var.nr-key
+  nr-acc-id = var.nr-id
 }
 
 module "prod-envi" {
