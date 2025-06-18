@@ -124,8 +124,8 @@ module "stage-envi" {
   acm-cert-arn = data.aws_acm_certificate.auto_acm_cert.arn
   domain       = var.domain
   nexus_ip     = module.nexus.nexus_ip
-  nr-key       = var.nr-key
-  nr-acct-id   = var.nr-id  
+  nr_key       = var.nr_key
+  nr_acct_id   = var.nr_id  
   ansible      =  module.ansible.ansible_sg
   target_group_arn  = aws_lb_target_group.stage_target_group.arn
 }
