@@ -13,32 +13,23 @@ unzip awscliv2.zip
 sudo ./aws/install
 sudo ln -svf /usr/local/bin/aws /usr/bin/aws
 
-# Configuring awscli
-# execute cmd as ec2-user
-sudo su -c "aws configure set aws_access_key_id ${aws_iam_access_key.ansible-user-key.id}" ec2-user
-sudo su -c "aws configure set aws_secret_access_key ${aws_iam_access_key.ansible-user-key.secret}" ec2-user
-sudo su -c "aws configure set default.region eu-west-3" ec2-user
-sudo su -c "aws configure set default.output text" ec2-user
-
-# Create export variables for access keys
-export AWS_ACCESS_KEY_ID=${aws_iam_access_key.ansible-user-key.id}
-export AWS_SECRET_ACCESS_KEY=${aws_iam_access_key.ansible-user-key.secret}
-
 # installing ansible
 sudo dnf install -y ansible-core
 sudo yum update -y
 
 # Copy private key into ansible server /home/ec2-user/.ssh/ dir.
-sudo echo "${var.private-key}" > /home/ec2-user/.ssh/id_rsa
+sudo echo "${var.private_key}" > /home/ec2-user/.ssh/id_rsa
 
 #Give permission to copied file
 sudo chown -R ec2-user:ec2-user /home/ec2-user/.ssh/id_rsa
 sudo chmod 400 /home/ec2-user/.ssh/id_rsa
 
-# Copying our files to ansible server from our local machine
-sudo echo "${file(var.deployment)}" >> /etc/ansible/deployment.yml
-sudo echo "${file(var.prod-bashscript)}" >> /etc/ansible/prod-bashscript.sh
-sudo echo "${file(var.stage-bashscript)}" >> /etc/ansible/stage-bashscript.sh
+# pull scripts from S3 bucket
+aws s3 cp s3://chijioke-bucket-auto-discovery-1/ansible-script/prod-bashscript.sh /etc/ansible/prod-bashscript.sh
+aws s3 cp s3://chijioke-bucket-auto-discovery-1/ansible-script/stage-bashscript.sh /etc/ansible/stage-bashscript.sh
+aws s3 cp s3://chijioke-bucket-auto-discovery-1/ansible-script/deployment.yml /etc/ansible/deployment.yml
+
+# create ansible variable file
 sudo bash -c 'echo "NEXUS_IP: ${var.nexus_ip}:8085" > /etc/ansible/ansible_vars_file.yml'
 sudo chown -R ec2-user:ec2-user /etc/ansible
 sudo chmod 755 /etc/ansible/prod-bashscript.sh
