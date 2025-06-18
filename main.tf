@@ -98,17 +98,16 @@ module "prod-envi" {
   vpc-id       = module.vpc.vpc_id
   bastion_sg   = module.bastion.bastion_sg
   key-name     = module.vpc.public_key
-  pri_subnet1  = module.vpc.pri_sub1_id
-  pri_subnet2  = module.vpc.pri_sub2_id
-  pub_subnet1  = module.vpc.pub_sub1_id
-  pub_subnet2  = module.vpc.pub_sub2_id
+  pri-subnet1  = module.vpc.pri-sub1_id
+  pri-subnet2  = module.vpc.pri-sub2_id
+  pub-subnet1  = module.vpc.pub-sub1_id
+  pub-subnet2  = module.vpc.pub-sub2_id
   acm-cert-arn = data.aws_acm_certificate.auto_acm_cert.arn
   domain       = var.domain
   nexus-ip     = module.nexus.nexus_ip
   nr-key       = var.nr-key
   nr-acct-id   = var.nr-id  
   ansible      =  module.ansible.ansible_sg
-  target_group_arn = module.prod-envi.target_group_arn
 }
 
 module "stage-envi" {
@@ -117,17 +116,16 @@ module "stage-envi" {
   vpc-id       = module.vpc.vpc_id
   bastion_sg   = module.bastion.bastion_sg
   key-name     = module.vpc.public_key
-  pri_subnet1  = module.vpc.pri-sub1_id
-  pri_subnet2  = module.vpc.pri-sub2_id
-  pub_subnet1  = module.vpc.pub-sub1_id
-  pub_subnet2  = module.vpc.pub-sub2_id
+  pri-subnet1  = module.vpc.pri-sub1_id
+  pri-subnet2  = module.vpc.pri-sub2_id
+  pub-subnet1  = module.vpc.pub-sub1_id
+  pub-subnet2  = module.vpc.pub-sub2_id
   acm-cert-arn = data.aws_acm_certificate.auto_acm_cert.arn
   domain       = var.domain
   nexus_ip     = module.nexus.nexus_ip
   nr-key       = var.nr-key
   nr-acct_id   = var.nr-id  
   ansible      =  module.ansible.ansible_sg
-  target_group_arn  = aws_lb_target_group.stage_target_group.arn
 }
 
 
