@@ -39,7 +39,7 @@ sudo chmod 400 /home/ec2-user/.ssh/id_rsa
 sudo echo "${file(var.deployment)}" >> /etc/ansible/deployment.yml
 sudo echo "${file(var.prod-bashscript)}" >> /etc/ansible/prod-bashscript.sh
 sudo echo "${file(var.stage-bashscript)}" >> /etc/ansible/stage-bashscript.sh
-sudo bash -c 'echo "NEXUS_IP: ${var.nexus-ip}:8085" > /etc/ansible/ansible_vars_file.yml'
+sudo bash -c 'echo "NEXUS_IP: ${var.nexus_ip}:8085" > /etc/ansible/ansible_vars_file.yml'
 sudo chown -R ec2-user:ec2-user /etc/ansible
 sudo chmod 755 /etc/ansible/prod-bashscript.sh
 sudo chmod 755 /etc/ansible/stage-bashscript.sh
@@ -49,7 +49,7 @@ echo "* * * * * ec2-user sh /etc/ansible/prod-bashscript.sh" > /etc/crontab
 echo "* * * * * ec2-user sh /etc/ansible/stage-bashscript.sh" >> /etc/crontab
 
 # Install New Relic
-curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && sudo NEW_RELIC_API_KEY="${var.nr-key}" NEW_RELIC_ACCOUNT_ID="${var.nr-acc-id}" NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
+curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && sudo NEW_RELIC_API_KEY="${var.nr_key}" NEW_RELIC_ACCOUNT_ID="${var.nr_acct_id}" NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
 sudo hostnamectl set-hostname ansible-server
 EOF
 }
