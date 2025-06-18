@@ -89,7 +89,7 @@ module "ansible" {
   stage-bashscript = "./module/ansible/stage-bashscript.sh" # Path to the stage bash script
   nexus_ip = module.nexus.nexus_ip
   nr_key = var.nr_key
-  nr_acc_id = var.nr_id
+  nr_acct_id = var.nr_acct_id
 }
 
 module "prod-envi" {
