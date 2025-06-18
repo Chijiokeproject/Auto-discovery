@@ -3,10 +3,10 @@ variable "domain" {
   type        = string
   default     = "chijiokedevops.space"
 }
-variable "nr-key" {
+variable "nr_key" {
   default = ""
 }
-variable "nr-id" {
-  default = 6360298
+variable "nr_acct_id" {
+  default = ""
 }
 
