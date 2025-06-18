@@ -9,7 +9,7 @@ variable "pub_subnet2" {}
 variable "domain" {}
 variable "nexus_ip" {}
 variable "nr_key" {}
-variable "nr_acct-id" {}
+variable "nr_acct_id" {}
 variable "ansible" {}
 variable "target_group_arn" {
   type = string
