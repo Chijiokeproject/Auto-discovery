@@ -8,14 +8,13 @@ variable "pub_subnet1" {}
 variable "pub_subnet2" {}
 variable "domain" {}
 variable "nexus-ip" {}
-variable "nr_key" {}
-variable "nr_acct_id" {}
+variable "nr-key" {}
+variable "nr-acct-id" {}
 variable "ansible" {}
-variable "target_group_arn" {
-  description = "Target group ARN for the load balancer"
-  type        = string
-}
 variable "acm-cert-arn" {
   type        = string
   description = "ARN of the SSL certificate for HTTPS listener"
 }
+
+
+
