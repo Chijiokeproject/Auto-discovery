@@ -78,7 +78,7 @@ resource "aws_autoscaling_group" "prod_autoscaling_grp" {
     id      = aws_launch_template.prod_lnch_tmpl.id
     version = "$Latest"
   }
-  vpc_zone_identifier = [var.pri-subnet1, var.pri-subnet2]
+  vpc_zone_identifier = [var.pri_subnet1, var.pri_subnet2]
   target_group_arns   = [aws_lb_target_group.prod-target-group.arn]
 
   tag {
@@ -107,7 +107,7 @@ resource "aws_lb" "prod_LB" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.prod-elb-sg.id]
-  subnets            = [var.pub-subnet1, var.pub-subnet2]
+  subnets            = [var.pub_subnet1, var.pub_subnet2]
   tags = {
     Name = "${var.name}-prod-LB"
   }
