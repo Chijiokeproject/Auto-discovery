@@ -51,10 +51,10 @@ resource "aws_launch_template" "prod_lnch_tmpl" {
   name_prefix   = "${var.name}-prod-web-tmpl"
   instance_type = "t2.medium"
   key_name      = var.key-name
-  user_data = base64encode(templatefile("./module/prod-env/docker-script.sh", {
-    nexus-ip   = var.nexus-ip,
-    nr-key     = var.nr-key,
-    nr-acct-id = var.nr-acct-id
+ user_data = base64encode(templatefile("${path.module}/../prod-env/docker-script.sh", {
+    nexus_ip   = var.nexus_ip
+    nr_key     = var.nr_key
+    nr_acct_id = var.nr_acct_id
   }))
 
   network_interfaces {
