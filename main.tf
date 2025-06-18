@@ -106,7 +106,7 @@ module "prod-envi" {
   domain       = var.domain
   nexus_ip     = module.nexus.nexus_ip
   nr_key       = var.nr_key
-  nr_acct-id   = var.nr_id  
+  nr_acct_id   = var.nr_acct_id  
   ansible      =  module.ansible.ansible_sg
 }
 
@@ -124,7 +124,7 @@ module "stage-envi" {
   domain       = var.domain
   nexus_ip     = module.nexus.nexus_ip
   nr_key       = var.nr_key
-  nr_acct_id   = var.nr_id  
+  nr_acct_id   = var.nr_acct_id  
   ansible      =  module.ansible.ansible_sg
 }
 
