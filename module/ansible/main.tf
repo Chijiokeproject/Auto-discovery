@@ -92,15 +92,23 @@ resource "aws_iam_role_policy_attachment" "s3-policy" {
   role       = aws_iam_role.ansible-role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
+#resource "null_resource" "ansible-setup" {
+ # provisioner "local-exec" {
+  #  command = <<EOT
+   #   /usr/bin/aws s3 cp --recursive ${path.module}/script/ s3://chijioke-bucket-auto-discovery-1/ansible-script/
+    #EOT
+    #interpreter = ["/bin/bash", "-c"]
+  #}
+#}
+
 resource "null_resource" "ansible-setup" {
   provisioner "local-exec" {
     command = <<EOT
-      /usr/bin/aws s3 cp --recursive ${path.module}/script/ s3://chijioke-bucket-auto-discovery-1/ansible-script/
+      /usr/local/bin/aws s3 cp --recursive ${path.module}/script/ s3://chijioke-bucket-auto-discovery-1/ansible-script/
     EOT
     interpreter = ["/bin/bash", "-c"]
   }
 }
-
 
 
 
