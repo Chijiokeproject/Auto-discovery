@@ -95,7 +95,7 @@ resource "aws_iam_role_policy_attachment" "s3-policy" {
 resource "null_resource" "ansible-setup" {
   provisioner "local-exec" {
     command = <<EOT
-      aws s3 cp --recursive ${path.module}/script/ s3://pet-adoption-state-bucket-1/ansible-script/ 
+      aws s3 cp --recursive ${path.module}/script/ s3://chijioke-bucket-auto-discovery-1/ansible-script/ 
     EOT
   } 
 }
