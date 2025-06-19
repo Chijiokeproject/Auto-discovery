@@ -12,5 +12,5 @@ variable "acm_certificate_arn" {
   type        = string
 }
 variable "route53_zone_id" {}
-variable "nr-key" {}
-variable "nr-id" {}
+variable "nr_key" {}
+variable "nr_acct_id" {}

@@ -26,5 +26,6 @@ output "private_key" {
 }
 
 output "keypair_name" {
-  value = aws_key_pair.keypair.key_name
+  value = aws_key_pair.public-key.key_name
 }
+

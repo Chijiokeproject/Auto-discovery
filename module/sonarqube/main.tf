@@ -46,7 +46,7 @@ data "aws_ami" "ubuntu" {
 }
 
 # Create Sonarqube Server
-resource "aws_instance" "sonarqube-server" {
+resource "aws_instance" "sonarqube_server" {
   ami                         = data.aws_ami.ubuntu.id # Use the latest Ubuntu AMI
   instance_type               = "t2.medium"
   vpc_security_group_ids      = [aws_security_group.sonarqube_sg.id]
@@ -68,21 +68,18 @@ resource "aws_instance" "sonarqube-server" {
   }
 }
 
-
-
-
 # ELB Security Group
 resource "aws_security_group" "elb_sonar_sg" {
   name        = "${var.name}-elb-sonar-sg"
-  description = "Allow HTTPS"
+  description = "Allow HTTPS to SonarQube via ELB"
   vpc_id      = var.vpc_id
 
-ingress {
-  from_port       = 9000
-  to_port         = 9000
-  protocol        = "tcp"
-  security_groups = [aws_security_group.elb_sonar_sg.id]
-}
+  ingress {
+    from_port   = 9000
+    to_port     = 9000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # ✅ Allow from anywhere — or restrict as needed
+  }
 
   egress {
     from_port   = 0
@@ -95,6 +92,7 @@ ingress {
     Name = "${var.name}-elb-sonar-sg"
   }
 }
+
 
 # Elastic Load Balancer
 resource "aws_elb" "elb_sonar" {

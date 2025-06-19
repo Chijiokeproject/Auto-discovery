@@ -1,8 +1,8 @@
 variable "name" {}
 variable "vpc" {}
 variable "bastion_sg" {}
-variable "nr-key" {}
-variable "nr-id" {}
+variable "nr_key" {}
+variable "nr_acct_id" {}
 variable "keypair" {}
 variable "subnet1_id" {}
 variable "subnet2_id" {}

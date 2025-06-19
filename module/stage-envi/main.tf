@@ -16,7 +16,7 @@ resource "aws_security_group" "stage-sg" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.stage-elb-sg.id]
   }
   egress {
     description = "Allow all outbound traffic"
@@ -51,16 +51,20 @@ resource "aws_launch_template" "stage_lnch_tmpl" {
   name_prefix   = "${var.name}-stage-web-tmpl"
   instance_type = "t2.medium"
   key_name      = var.key-name
-  user_data = base64encode(templatefile("./module/stage-envi/docker-script.sh", {
-    nexus-ip             = var.nexus-ip,
-    nr-key               = var.nr-key,
-    nr-acct-id           = var.nr-acct-id
-  }))
+ user_data = base64encode(templatefile("${path.module}/docker-script.sh", {
+  nexus_ip   = var.nexus_ip
+  nr_key     = var.nr_key
+  nr_acct_id = var.nr_acct_id
+}))
+
+
 
   network_interfaces {
     security_groups = [aws_security_group.stage-sg.id]
   }
-  #user_data = ""
+  metadata_options {
+    http_tokens = "required"
+  }
 }
 
 # Create Auto Scaling Group
@@ -76,7 +80,7 @@ resource "aws_autoscaling_group" "stage_autoscaling_grp" {
     id      = aws_launch_template.stage_lnch_tmpl.id
     version = "$Latest"
   }
-  vpc_zone_identifier = [var.pri-subnet1, var.pri-subnet2]
+  vpc_zone_identifier = [var.pri_subnet1, var.pri_subnet2]
   target_group_arns   = [aws_lb_target_group.stage-target-group.arn]
 
   tag {
@@ -101,11 +105,11 @@ resource "aws_autoscaling_policy" "stage-asg-policy" {
 
 # Create Application Load Balancer for stage
 resource "aws_lb" "stage_LB" {
-  name                       = "${var.name}-stage-LB"
-  internal                   = false
-  load_balancer_type         = "application"
-  security_groups            = [aws_security_group.stage-sg.id]
-  subnets                    = [var.pub-subnet1, var.pub-subnet2]
+  name               = "${var.name}-stage-LB"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.stage-elb-sg.id]
+  subnets            = [var.pub_subnet1, var.pub_subnet2]
   tags = {
     Name = "${var.name}-stage-LB"
   }

@@ -2,11 +2,8 @@ variable "keypair" {}
 variable "name" {}
 variable "subnet_id" {}
 variable "vpc" {}
-variable "bastion_sg" {}
-variable "private-key" {}
-variable "deployment" {}
-variable "prod-bashscript" {}
-variable "stage-bashscript" {}
-variable "nexus-ip" {}
-variable "nr-key" {}
-variable "nr-acc-id" {}
+variable "bastion_key" {}
+variable "private_key" {}
+variable "nexus_ip" {}
+variable "nr_key" {}
+variable "nr_acct_id" {}
