@@ -92,11 +92,6 @@ resource "aws_iam_role_policy_attachment" "s3-policy" {
   role       = aws_iam_role.ansible-role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
-# Create IAM instance profile for ansible
-resource "aws_iam_instance_profile" "ansible_profile" {
-  name = "ansible-discovery-profile"
-  role = aws_iam_role.ansible-role.name
-}
 resource "null_resource" "ansible-setup" {
   provisioner "local-exec" {
     command = <<EOT
