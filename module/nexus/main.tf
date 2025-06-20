@@ -145,20 +145,32 @@ resource "aws_route53_record" "nexus-record" {
 resource "null_resource" "update_jenkins" {
   depends_on = [aws_instance.nexus]
 
-  provisioner "local-exec" {
-    command = <<-EOF
+#  provisioner "local-exec" {
+ #   command = <<-EOF
 #!/bin/bash
-sudo cat <<EOT>> /etc/docker/daemon.json
-  {
-    "insecure-registries" : ["${aws_instance.nexus.public_ip}:8085"]
-  }
-EOT
-sudo systemctl restart docker
-EOF
-  interpreter = [ "bash", "-c" ]
-  } 
+#sudo cat <<EOT>> /etc/docker/daemon.json
+ # {
+  #  "insecure-registries" : ["${aws_instance.nexus.public_ip}:8085"]
+  #}
+#EOT
+#sudo systemctl restart docker
+#EOF
+ # interpreter = [ "bash", "-c" ]
+  #} 
+#}
+
+
+provisioner "local-exec" {
+  command = <<EOT
+#!/bin/bash
+sudo tee /etc/docker/daemon.json > /dev/null <<EOF
+{
+  "insecure-registries": ["${aws_instance.nexus.public_ip}:8085"]
 }
-
-
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+EOT
+}
 
 
