@@ -160,6 +160,7 @@ resource "null_resource" "update_jenkins" {
 #}
 
 
+resource "null_resource" "update_jenkins" {
 provisioner "local-exec" {
   command = <<EOT
 #!/bin/bash
@@ -172,5 +173,8 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 EOT
 }
+}
+
+
 
 
