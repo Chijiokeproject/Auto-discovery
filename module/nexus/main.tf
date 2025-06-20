@@ -142,9 +142,6 @@ resource "aws_route53_record" "nexus-record" {
   }
 }
 
-resource "null_resource" "update_jenkins" {
-  depends_on = [aws_instance.nexus]
-
 #  provisioner "local-exec" {
  #   command = <<-EOF
 #!/bin/bash
