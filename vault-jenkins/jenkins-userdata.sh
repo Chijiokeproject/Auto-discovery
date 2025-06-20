@@ -32,5 +32,5 @@ sudo yum install docker-ce -y
 sudo systemctl start docker
 sudo systemctl enable docker
 #  install newrelic agent
-curl -Ls https://download.newrelic.com/install/newrelic-cli/scipts/install.sh | bash && sudo NEW_RELIC_API_KEY="${nr-key}" NEW_RELIC_ACCOUNT_ID="${nr-acc-id}" NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
+curl -Ls https://download.newrelic.com/install/newrelic-cli/scipts/install.sh | bash && sudo NEW_RELIC_API_KEY="${nr_key}" NEW_RELIC_ACCOUNT_ID="${nr_acct_id}" NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
 sudo hostnamectl set-hostname jenkins

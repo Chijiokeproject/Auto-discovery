@@ -152,11 +152,7 @@ resource "time_sleep" "wait_3_min" {
   depends_on      = [aws_instance.vault_server]
   create_duration = "300s"
 }
-
-#create null resource to fetch vault token
-#resource "null_resource" "fetch_token" {
-# depends_on = [time_sleep.wait_3_min]
-# create terraform provisioner to help fetch token file from the vault server
+#create null resource to fetch 
 resource "null_resource" "fetch_token" {
   depends_on = [aws_instance.vault_server, time_sleep.wait_3_min]
 
@@ -320,8 +316,8 @@ resource "aws_instance" "jenkins_server" {
   }
 
   user_data = templatefile("./jenkins-userdata.sh", {
-    nr-key    = ""
-    nr-acc-id = ""
+    nr_key    = ""
+    nr_acct_id = ""
   })
 
   tags = {
