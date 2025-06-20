@@ -93,15 +93,6 @@ resource "aws_iam_role_policy_attachment" "s3-policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
-#resource "null_resource" "ansible-setup" {
- # provisioner "local-exec" {
-  #  command = <<EOT
-   #   /usr/local/bin/aws s3 cp --recursive ${path.module}/script/ s3://chijioke-bucket-auto-discovery-1/ansible-script/
-   # EOT
-   # interpreter = ["/bin/bash", "-c"]
-  #}
-#}
-
 resource "null_resource" "ansible-setup" {
   provisioner "local-exec" {
     command = <<EOT
@@ -112,45 +103,4 @@ resource "null_resource" "ansible-setup" {
 }
 
 
-
-
-#resource "null_resource" "ansible-setup" {
- # provisioner "local-exec" {
-  #  command = <<EOT
-   #   /usr/bin/aws s3 cp --recursive ${path.module}/script/ s3://chijioke-bucket-auto-discovery-1/ansible-script/
-    #EOT
-    #interpreter = ["/bin/bash", "-c"]
-  #}
-#}
-
-# IAM User
-#resource "aws_iam_user" "ansible_user" {
- #3 name = "${var.name}-ansible-user"
-#}
-
-#resource "aws_iam_group" "ansible_group" {
-#  name = "${var.name}-ansible-group"
-#}
-
-#resource "aws_iam_access_key" "ansible_user_key" {
- # user = aws_iam_user.ansible-user.name
-#}
-
-#resource "aws_iam_user_group_membership" "ansible_group_member" {
- # user   = aws_iam_user.ansible-user.name
- # groups = [aws_iam_group.ansible-group.name]
-#}
-
-#resource "aws_iam_group_policy_attachment" "ansible_policy" {
-#  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
-#  group      = aws_iam_group.ansible-group.name
-#}
-
-#resource "null_resource" "ansible-setup" {
-#  provisioner "local-exec" {
-#    command = <<EOT
-#      aws s3 cp --recursive ${path.module}/script/ s3://chijioke-bucket-auto-discovery-1/ansible-script/ 
-#    EOT
-#  } 
-#}
 

@@ -316,7 +316,7 @@ resource "aws_instance" "jenkins_server" {
   }
 
   user_data = templatefile("./jenkins-userdata.sh", {
-    nr_key    = ""
+    nr_key     = ""
     nr_acct_id = ""
   })
 
