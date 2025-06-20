@@ -161,7 +161,7 @@ resource "null_resource" "update_jenkins" {
 
 resource "null_resource" "update_jenkins" {
   depends_on = [aws_instance.nexus]
-resource "null_resource" "update_jenkins" {
+
   provisioner "local-exec" {
     command = <<EOT
 #!/bin/bash
@@ -175,5 +175,6 @@ sudo systemctl restart docker
 EOT
   }
 }
-}
+
+
 
