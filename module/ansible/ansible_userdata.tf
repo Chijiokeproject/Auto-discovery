@@ -8,10 +8,11 @@ sudo yum install wget unzip -y
 sudo bash -c 'echo "StrictHostKeyChecking No" >> /etc/ssh/ssh_config'
 
 # Installing awscli
+sudo yum update
+sudo yum install unzip curl -y
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
-sudo ln -svf /usr/local/bin/aws /usr/bin/aws
 
 # installing ansible
 sudo dnf install -y ansible-core
@@ -44,3 +45,4 @@ curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh |
 sudo hostnamectl set-hostname ansible-server
 EOF
 }
+
