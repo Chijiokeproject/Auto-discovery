@@ -88,7 +88,7 @@ apt install -y nginx
 cat <<EOF > /etc/nginx/sites-available/sonarqube
 server {
     listen 80;
-    server_name sonarqube.set30.site;
+    server_name sonarqube.chijiokedevops.site;
 
     location / {
         proxy_pass http://localhost:9000;
