@@ -107,7 +107,7 @@ resource "aws_elb" "sonarqube_elb" {
     instance_protocol  = "http"
     lb_port            = 443
     lb_protocol        = "https"
-    ssl_certificate_id = var.auto_acm_cert
+    ssl_certificate_id = var.acm_certificate_arn
 
   }
 

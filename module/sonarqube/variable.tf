@@ -7,7 +7,7 @@ variable "domain" {
   default = "chijiokedevops.space"
 }
 variable "public_subnets" {}
-variable "auto_acm_cert" {
+variable "acm_certificate_arn" {
   description = "ARN of the ACM certificate"
   type        = string
 }
