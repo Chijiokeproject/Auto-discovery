@@ -7,7 +7,7 @@ variable "domain" {
   default = "chijiokedevops.space"
 }
 variable "public_subnets" {}
-variable "acm_certificate_arn" {
+variable "auto_acm_cert" {
   description = "ARN of the ACM certificate to attach to the ELB"
   type        = string
 }
