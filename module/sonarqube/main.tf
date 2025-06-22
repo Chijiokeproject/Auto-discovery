@@ -146,16 +146,16 @@ data "aws_route53_zone" "auto-discovery-zone" {
 
 # Route53 Record
 resource "aws_route53_record" "sonarqube_dns" {
-zone_id = data.aws_route53_zone.auto-discovery-zone.zone_id
-name    = "sonar.${var.domain}"
-type    = "A"
+  zone_id = data.aws_route53_zone.auto-discovery-zone.zone_id
+  name    = "sonarqube.${data.aws_route53_zone.auto-discovery-zone.name}"
+  type    = "A"
 
   alias {
     name                   = aws_elb.sonarqube_elb.dns_name
-    zone_id                = data.aws_route53_zone.auto-discovery-zone.zone_id  # not from ELB
-
-    evaluate_target_health = true
+    zone_id                = aws_elb.sonarqube_elb.zone_id
+    evaluate_target_health = false
   }
 }
+
 
 
