@@ -31,7 +31,7 @@ module "sonarqube" {
   name                = local.name
   subnet_id           = module.vpc.pub_sub1_id
   bastion_sg          = module.bastion.bastion_sg
-  vpc              = module.vpc.vpc_id
+  vpc_id                 = module.vpc.vpc_id
   domain              = var.domain
   subnet1_id          = module.vpc.pub_sub1_id
   subnet2_id          = module.vpc.pub_sub2_id

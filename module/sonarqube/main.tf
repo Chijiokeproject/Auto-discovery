@@ -151,7 +151,8 @@ name    = "sonar.${var.domain}"
 type    = "A"
 
   alias {
-    name                   = aws_elb.elb_sonarqube.dns_name
+    name                   = aws_elb.sonarqube_elb.dns_name
+
     zone_id                = data.aws_route53_zone.auto-discovery-zone.zone_id  # not from ELB
 
     evaluate_target_health = true

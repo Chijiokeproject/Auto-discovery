@@ -2,7 +2,7 @@ variable "keypair" {}
 variable "name" {}
 variable "subnet_id" {}
 variable "bastion_sg" {}
-variable "vpc" {}
+variable "vpc_id" {}
 variable "domain" {
   default = "chijiokedevops.space"
 }
