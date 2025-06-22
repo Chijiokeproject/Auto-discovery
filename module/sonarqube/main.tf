@@ -71,10 +71,10 @@ resource "aws_instance" "sonarqube_server" {
 }
 
 # Security Group for ELB
-resource "aws_security_group" "elb_sg" {
+resource "aws_security_group" "elb_sonarqube_sg" {
   name        = "${var.name}elb-sonarqube-sg"
   description = "Allow HTTPS to SonarQube ELB"
-  vpc_id      = var.vpc_id
+  vpc_id      = var.vpc
 
   ingress {
     description = "HTTPS"
@@ -99,8 +99,8 @@ resource "aws_security_group" "elb_sg" {
 # Create Classic Load Balancer
 resource "aws_elb" "sonarqube_elb" {
   name            = "${var.name}-sonarqube-elb"
-  subnets         = var.public_subnets
-  security_groups = [aws_security_group.elb_sg.id]
+  subnets         = [var.subnet1_id, var.subnet2_id]
+  security_groups = [aws_security_group.elb_sonarqube_sg.id]
 
   listener {
     instance_port      = 9000
@@ -110,7 +110,6 @@ resource "aws_elb" "sonarqube_elb" {
     ssl_certificate_id = var.acm_certificate_arn
 
   }
-
   health_check {
     target              = "TCP:9000"
     interval            = 30
@@ -120,31 +119,40 @@ resource "aws_elb" "sonarqube_elb" {
   }
 
   instances = [aws_instance.sonarqube_server.id]
+    cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
 
   tags = {
     Name = "sonarqube-elb"
   }
 }
 
-# ACM Certificate
-resource "aws_acm_certificate" "sonarqube_cert" {
-  domain_name       = "sonar.${var.domain}"
-  validation_method = "DNS"
-
-  lifecycle {
-    create_before_destroy = true
-  }
+# Create Route 53 record for sonarqube host
+data "aws_route53_zone" "auto-discovery-zone" {
+  name         = var.domain
+  private_zone = false
 }
+# ACM Certificate
+#resource "aws_acm_certificate" "sonarqube_cert" {
+ # domain_name       = "sonar.${var.domain}"
+  #validation_method = "DNS"
+
+  #lifecycle {
+   # create_before_destroy = true
+  #}
+#}
 
 # Route53 Record
 resource "aws_route53_record" "sonarqube_dns" {
-  zone_id = var.route53_zone_id
-  name    = "sonar.${var.domain}"
-  type    = "A"
+zone_id = data.aws_route53_zone.auto-discovery-zone.zone_idd
+name    = "sonar.${var.domain}"
+type    = "A"
 
   alias {
-    name                   = aws_elb.sonarqube_elb.dns_name
-    zone_id                = aws_elb.sonarqube_elb.zone_id
+    name                   = aws_elb.sonarqube.dns_name
+    zone_id                = aws_elb.sonarqube.zone_id
     evaluate_target_health = true
   }
 }
