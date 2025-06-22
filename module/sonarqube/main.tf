@@ -74,7 +74,7 @@ resource "aws_instance" "sonarqube_server" {
 resource "aws_security_group" "elb_sonarqube_sg" {
   name        = "${var.name}elb-sonarqube-sg"
   description = "Allow HTTPS to SonarQube ELB"
-  vpc_id      = var.vpc
+  vpc_id      = var.vpc_id
 
   ingress {
     description = "HTTPS"
@@ -152,7 +152,6 @@ type    = "A"
 
   alias {
     name                   = aws_elb.sonarqube_elb.dns_name
-
     zone_id                = data.aws_route53_zone.auto-discovery-zone.zone_id  # not from ELB
 
     evaluate_target_health = true
