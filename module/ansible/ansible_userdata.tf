@@ -19,7 +19,9 @@ sudo dnf install -y ansible-core
 sudo yum update -y
 
 # Copy private key into ansible server /home/ec2-user/.ssh/ dir.
-sudo echo "${var.private_key}" > /home/ec2-user/.ssh/id_rsa
+cat <<EOF > /home/ec2-user/.ssh/id_rsa
+${private_key}
+EOF
 
 #Give permission to copied file
 sudo chown -R ec2-user:ec2-user /home/ec2-user/.ssh/id_rsa
