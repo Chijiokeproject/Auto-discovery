@@ -19,9 +19,10 @@ locals {
     sudo yum update -y
 
     # Copy private key into Ansible server
-    cat <<EOKEY > /home/ec2-user/.ssh/id_rsa
-    ${private_key}
-    EOKEY
+   cat <<EOKEY > /home/ec2-user/.ssh/id_rsa
+   ${var.private_key}
+   EOKEY
+
 
     sudo chown -R ec2-user:ec2-user /home/ec2-user/.ssh/id_rsa
     sudo chmod 400 /home/ec2-user/.ssh/id_rsa

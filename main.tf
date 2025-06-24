@@ -82,7 +82,7 @@ module "ansible" {
   subnet_id = module.vpc.pri_sub1_id
   vpc       = module.vpc.vpc_id
   bastion_key   = module.bastion.bastion_sg
-  private_key = module.vpc.private_key
+  private_key = file("~/.ssh/id_rsa")
   nexus_ip = module.nexus.nexus_ip
   nr_key = var.nr_key
   nr_acct_id = var.nr_acct_id
