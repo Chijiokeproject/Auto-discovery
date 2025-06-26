@@ -86,7 +86,6 @@ module "ansible" {
   nexus_ip = module.nexus.nexus_ip
   nr_key = var.nr_key
   nr_acct_id = var.nr_acct_id
-  s3Bucket = var.s3Bucket
 }
 
 module "prod-envi" {
