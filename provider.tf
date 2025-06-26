@@ -4,9 +4,8 @@ provider "aws" {
 
 provider "vault" {
   address = "https://vault.chijiokedevops.space"
-  token   = "s.rqtES4Y8dlErmPAt5PgWKrh9"
+  token   = "s.NYe5XmzYAYB9IJrUzxRF49dz"
 }
-
 terraform {
   backend "s3" {
     bucket       = "chijioke-bucket-auto-discovery-1"
