@@ -15,6 +15,16 @@ data "aws_ami" "redhat" {
     values = ["x86_64"]
   }
 }
+
+# null resurce to copy the ansible playbooks folder into the s3 bucket
+resource "null_resource" "copy_ansible_playbooks" {
+  provisioner "local-exec" {
+    command = <<EOT
+      aws s3 cp --recursive ${path.module}/scripts/ s3://${var.s3Bucket}/ansible/
+    EOT
+  }
+  depends_on = [time_sleep.wait_for_ansible]
+}
 #Creating ansible security group
 resource "aws_security_group" "ansible-sg" {
   name        = "${var.name}ansible-sg"
