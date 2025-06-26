@@ -42,11 +42,10 @@ sudo mkdir -p /etc/ansible
 
 
 # pulling the ansible scripts and playbook folder from s3 bucket
-sudo aws s3 cp s3://${chijioke-bucket-auto-discovery-1}/ansible /etc/ansible --recursive
+sudo aws s3 cp s3://chijioke-bucket-auto-discovery-1/ansible /etc/ansible --recursive
 sudo chmod +x /etc/ansible/*.sh
 
 sleep 10s
-
 # Create ansible hosts file 
 sudo bash -c 'echo "NEXUS_IP: ${var.nexus_ip}:8085" > /etc/ansible/ansible_vars_file.yml'
 
