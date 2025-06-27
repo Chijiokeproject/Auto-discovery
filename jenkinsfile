@@ -14,19 +14,19 @@ pipeline {
     }
 
     environment {
-        PIPENV_PATH = '/usr/local/bin' // Add this if pipenv is installed globally here
+        PIPENV_PATH = '/usr/local/bin' // Path where pipenv is typically installed
     }
 
     stages {
         stage('IAC Scan') {
             steps {
                 script {
-                    sh '''
-                        export PATH=$PATH:$PIPENV_PATH
+                    sh """
+                        export PATH=\$PATH:${env.PIPENV_PATH}
                         pip install pipenv
-                        pipenv install checkov
-                        pipenv run checkov -d . -o junitxml --output-file checkov-results.xml || true
-                    '''
+                        ${env.PIPENV_PATH}/pipenv install checkov
+                        ${env.PIPENV_PATH}/pipenv run checkov -d . -o junitxml --output-file checkov-results.xml || true
+                    """
                     junit allowEmptyResults: true, testResults: 'checkov-results.xml'
                 }
             }
