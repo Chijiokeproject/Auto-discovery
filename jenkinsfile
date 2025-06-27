@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        terraform 'terraform' // Make sure this matches the configured tool in Jenkins
+        terraform 'terraform' // Ensure this matches the tool configured in Jenkins
     }
 
     parameters {
@@ -10,24 +10,24 @@ pipeline {
     }
 
     triggers {
-        pollSCM('* * * * *') // Runs every minute (for demo; consider reducing frequency)
+        pollSCM('* * * * *') // Runs every minute (for demo purposes)
     }
- 
+
+    environment {
+        PIPENV_PATH = '/usr/local/bin' // Add this if pipenv is installed globally here
+    }
+
     stages {
         stage('IAC Scan') {
             steps {
                 script {
-                    sh 'pip install pipenv'
-                    sh 'pipenv install checkov'
-                    def checkovStatus = sh(script: 'pipenv run checkov -d . -o junitxml --output-file checkov-results.xml', returnStatus: true)
-
+                    sh '''
+                        export PATH=$PATH:$PIPENV_PATH
+                        pip install pipenv
+                        pipenv install checkov
+                        pipenv run checkov -d . -o junitxml --output-file checkov-results.xml || true
+                    '''
                     junit allowEmptyResults: true, testResults: 'checkov-results.xml'
-
-                    if (checkovStatus != 0) {
-                        echo '⚠️ Checkov found issues. Proceeding anyway...'
-                        // Uncomment the next line to fail the build on Checkov error
-                        // error 'Checkov found critical issues.'
-                    }
                 }
             }
         }
@@ -99,5 +99,3 @@ pipeline {
         }
     }
 }
-
-
