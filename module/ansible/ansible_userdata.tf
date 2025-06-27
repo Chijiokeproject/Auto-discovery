@@ -59,7 +59,6 @@ sudo chmod 755 /etc/ansible/stage-bashscript.sh
 echo "* * * * * ec2-user /bin/sh /etc/ansible/prod-bashscript.sh" | sudo tee /etc/crontab
 echo "* * * * * ec2-user /bin/sh /etc/ansible/stage-bashscript.sh" | sudo tee -a /etc/crontab
 
-# Install New Relic CLI
 # Install New Relic
 curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && sudo NEW_RELIC_API_KEY="${var.nr_key}" NEW_RELIC_ACCOUNT_ID="${var.nr_acct_id}" NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
 sudo hostnamectl set-hostname ansible-server
