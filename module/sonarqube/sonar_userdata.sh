@@ -23,7 +23,6 @@ echo "Using zip file: $SONAR_ZIP"
 # === INSTALL DEPENDENCIES ===
 sudo apt update
 sudo apt install -y openjdk-17-jdk unzip wget postgresql ufw nginx
-
 # === CREATE SONAR SYSTEM USER WITHOUT LOGIN ===
 if ! id "$SONAR_USER" &>/dev/null; then
   sudo useradd -r -s /bin/false "$SONAR_USER"
@@ -119,6 +118,7 @@ sudo NEW_RELIC_API_KEY="${nr_key}" \
      NEW_RELIC_ACCOUNT_ID="${nr_acct_id}" \
      NEW_RELIC_REGION="EU" \
      /usr/local/bin/newrelic install -y
+
 
 # Set the hostname
 sudo hostnamectl set-hostname sonarqube
