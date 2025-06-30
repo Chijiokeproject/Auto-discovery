@@ -9,10 +9,9 @@ resource "tls_private_key" "vault_key" {
 }
 resource "local_file" "private_key" {
   content         = tls_private_key.vault_key.private_key_pem
-  filename        = "${local.name}-key.pem"
+  filename        = "${path.module}/${local.name}-key.pem"
   file_permission = "400"
 }
-
 resource "aws_key_pair" "vault_key" {
   key_name   = "${local.name}vault-key"
   public_key = tls_private_key.vault_key.public_key_openssh

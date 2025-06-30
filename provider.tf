@@ -4,7 +4,7 @@ provider "aws" {
 
 provider "vault" {
   address = "https://vault.chijiokedevops.space"
-  token   = "s.DF79uMNwqoMP8mm3fo1yt6iS"
+  token   = "s.E2dESVxBRUvUKly3QCJC7CBO"
 }
 terraform {
   backend "s3" {
