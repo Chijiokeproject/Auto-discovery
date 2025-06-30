@@ -139,7 +139,7 @@ resource "tls_private_key" "key" {
 resource "local_file" "private-key" {
   content         = tls_private_key.key.private_key_pem
   filename        = "${var.name}-key.pem"
-  file_permission = 600
+  file_permission = 440
 }
 
 # Creating public key in AWS
