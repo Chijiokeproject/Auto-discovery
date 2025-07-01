@@ -48,7 +48,12 @@ resource "aws_iam_user" "ansible-user" {
 
 resource "aws_iam_group" "ansible-group" {
   name = "${var.name}-ansible-group"
+    lifecycle {
+    create_before_destroy = true
+    ignore_changes = [name]
+  }
 }
+
 
 resource "aws_iam_access_key" "ansible-user-key" {
   user = aws_iam_user.ansible-user.name
