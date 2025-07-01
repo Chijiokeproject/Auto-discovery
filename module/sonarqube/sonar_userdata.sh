@@ -1,9 +1,3 @@
-
-#  install newrelic agent
-curl -Ls https://download.newrelic.com/install/newrelic-cli/scipts/install.sh | bash && sudo NEW_RELIC_API_KEY="${nr_key}" NEW_RELIC_ACCOUNT_ID="${nr_acct_id}" NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
-sudo hostnamectl set-hostname sonarqube
-
-
 #!/bin/bash
 set -e
 
@@ -85,8 +79,6 @@ sudo systemctl enable sonarqube
 sudo systemctl start sonarqube
 
 echo "✅ SonarQube $SONAR_VERSION installed and running."
-
-# ====== CONFIGURE NGINX ===========
 
 # === Configure NGINX for SonarQube ===
 sudo tee /etc/nginx/sites-available/sonarqube > /dev/null <<EOF
