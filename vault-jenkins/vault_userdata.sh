@@ -103,6 +103,8 @@ sleep 20
 # #Set vault token/secret username and password
 touch /home/ubuntu/output.txt
 vault operator init > /home/ubuntu/output.txt
+#chown ubuntu:ubuntu /home/ubuntu/token.txt
+#chmod 600 /home/ubuntu/token.txt
 grep -o 's\.[A-Za-z0-9]\{24\}' /home/ubuntu/output.txt > /home/ubuntu/token.txt
 token_content=$(</home/ubuntu/token.txt)
 vault login $token_content

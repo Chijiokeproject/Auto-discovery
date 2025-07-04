@@ -42,7 +42,7 @@ sudo mkdir -p /etc/ansible
 
 
 # pulling the ansible scripts and playbook folder from s3 bucket
-sudo aws s3 cp s3://chijioke-bucket-auto-discovery-1/ansible-script /etc/ansible --recursive
+sudo aws s3 cp s3://chijioke-bucket-auto-discovery/ansible-script /etc/ansible --recursive
 sudo chmod +x /etc/ansible/*.sh
 
 sleep 10s

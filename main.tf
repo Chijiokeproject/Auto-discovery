@@ -5,13 +5,10 @@ locals {
 module "vpc" {
   source = "./module/vpc"
   name   = local.name
-  az1    = "eu-west-3a"
-  az2    = "eu-west-3b"
+  az1    = "us-west-1b"
+  az2    = "us-west-1c"
 }
-provider "aws" {
-  alias  = "paris"
-  region = "eu-west-3"
-}
+
 data "aws_acm_certificate" "auto_acm_cert" {
   domain              = "chijiokedevops.space"
   statuses            = ["ISSUED"]

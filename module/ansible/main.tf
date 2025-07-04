@@ -142,7 +142,7 @@ resource "time_sleep" "wait_for_ansible" {
 resource "null_resource" "ansible-setup" {
   provisioner "local-exec" {
     command = <<EOT
-      aws s3 cp --recursive ${path.module}/script/ s3://chijioke-bucket-auto-discovery-1/ansible-script/
+      aws s3 cp --recursive ${path.module}/script/ s3://chijioke-bucket-auto-discovery/ansible-script/
     EOT
   }
     depends_on = [time_sleep.wait_for_ansible]
