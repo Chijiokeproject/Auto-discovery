@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        terraform 'terraform' // Make sure this matches the configured tool in Jenkins
+        terraform 'terraform' // Ensure this matches the tool configured in Jenkins
     }
 
     parameters {
@@ -10,24 +10,23 @@ pipeline {
     }
 
     triggers {
-        pollSCM('* * * * *') // Runs every minute (for demo; consider reducing frequency)
+        pollSCM('* * * * *') // Runs every minute (for demo purposes)
     }
- 
+
     stages {
         stage('IAC Scan') {
             steps {
                 script {
-                    sh 'pip install pipenv'
-                    sh 'pipenv install checkov'
-                    def checkovStatus = sh(script: 'pipenv run checkov -d . -o junitxml --output-file checkov-results.xml', returnStatus: true)
+                    def checkovStatus = sh(script: """
+                        python3 -m venv venv
+                        source venv/bin/activate
+                        pip install -U pip
+                        pip install --ignore-installed checkov
+                        checkov -d . -o cli -o junitxml --output-file-path console,results.xml --quiet --compact
+                    """, returnStatus: true)
 
-                    junit allowEmptyResults: true, testResults: 'checkov-results.xml'
-
-                    if (checkovStatus != 0) {
-                        echo '⚠️ Checkov found issues. Proceeding anyway...'
-                        // Uncomment the next line to fail the build on Checkov error
-                        // error 'Checkov found critical issues.'
-                    }
+                    junit skipPublishingChecks: true, testResults: 'results.xml'
+                    echo "Checkov command exited with status ${checkovStatus}"
                 }
             }
         }
@@ -64,9 +63,7 @@ pipeline {
 
         stage('Terraform Action') {
             steps {
-                script {
-                    sh "terraform ${params.action} -auto-approve"
-                }
+                sh "terraform ${params.action} -auto-approve"
             }
         }
     }
@@ -99,5 +96,3 @@ pipeline {
         }
     }
 }
-
-

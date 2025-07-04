@@ -124,7 +124,7 @@ resource "aws_elb" "elb_nexus" {
   }
 }
 
-# Create Route 53 record for bastion host
+# Create Route 53 record for nexus host
 data "aws_route53_zone" "auto-discovery-zone" {
   name         = var.domain
   private_zone = false
@@ -146,19 +146,18 @@ resource "null_resource" "update_jenkins" {
   depends_on = [aws_instance.nexus]
 
   provisioner "local-exec" {
-    command = <<-EOF
+    command = <<EOT
 #!/bin/bash
-sudo cat <<EOT>> /etc/docker/daemon.json
-  {
-    "insecure-registries" : ["${aws_instance.nexus.public_ip}:8085"]
-  }
-EOT
-sudo systemctl restart docker
-EOF
-  interpreter = [ "bash", "-c" ]
-  } 
+sudo tee /etc/docker/daemon.json > /dev/null <<EOF
+{
+  "insecure-registries": ["${aws_instance.nexus.public_ip}:8085"]
 }
-
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+EOT
+  }
+}
 
 
 

@@ -7,3 +7,5 @@ variable "private_key" {}
 variable "nexus_ip" {}
 variable "nr_key" {}
 variable "nr_acct_id" {}
+
+

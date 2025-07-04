@@ -136,7 +136,7 @@ resource "aws_instance" "vault_server" {
   iam_instance_profile = aws_iam_instance_profile.profile_vault.id
 
   user_data = templatefile("./vault_userdata.sh", {
-    var1 = "eu-west-3",
+    var1 = "us-west-1",
     var2 = aws_kms_key.vault_key.id
   })
 
@@ -145,17 +145,12 @@ resource "aws_instance" "vault_server" {
   }
 }
 
-
-
 #create a time sleep resource that allow terraform to wait till vault server is ready
 resource "time_sleep" "wait_3_min" {
   depends_on      = [aws_instance.vault_server]
   create_duration = "300s"
 }
 
-#create null resource to fetch vault token
-#resource "null_resource" "fetch_token" {
-# depends_on = [time_sleep.wait_3_min]
 # create terraform provisioner to help fetch token file from the vault server
 resource "null_resource" "fetch_token" {
   depends_on = [aws_instance.vault_server, time_sleep.wait_3_min]
@@ -220,7 +215,7 @@ resource "aws_acm_certificate_validation" "auto_cert_validation" {
 #Create Security Group for Vault Elastic Load Balancer
 resource "aws_security_group" "elb_vault_sg" {
   name        = "elb-vault-sg"
-  description = "Allow HTTPS"
+  description = "Allow HTTPS and SSH for Vault ELB"
 
   ingress {
     from_port   = 22
@@ -228,6 +223,7 @@ resource "aws_security_group" "elb_vault_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
   ingress {
     from_port   = 443
     to_port     = 443
@@ -246,7 +242,7 @@ resource "aws_security_group" "elb_vault_sg" {
 # Create load balancer for Vault Server
 resource "aws_elb" "elb_vault" {
   name               = "vault-elb"
-  availability_zones = ["eu-west-3a", "eu-west-3b", "eu-west-3c"]
+  availability_zones = ["us-west-1b", "us-west-1c"] # only valid AZs
   security_groups    = [aws_security_group.elb_vault_sg.id]
 
   listener {
@@ -280,6 +276,7 @@ resource "aws_route53_record" "vault_record" {
   zone_id = data.aws_route53_zone.auto-discovery-zone.zone_id
   name    = "vault.${var.domain}"
   type    = "A"
+
   alias {
     name                   = aws_elb.elb_vault.dns_name
     zone_id                = aws_elb.elb_vault.zone_id
@@ -307,7 +304,7 @@ data "aws_ami" "redhat" {
 # create jenkins instance
 resource "aws_instance" "jenkins_server" {
   ami                         = data.aws_ami.redhat.id
-  instance_type               = "t2.medium"
+  instance_type               = "t3.medium"
   key_name                    = aws_key_pair.vault_key.key_name
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
@@ -320,8 +317,8 @@ resource "aws_instance" "jenkins_server" {
   }
 
   user_data = templatefile("./jenkins-userdata.sh", {
-    nr-key    = ""
-    nr-acc-id = ""
+    nr_key     = ""
+    nr_acct_id = ""
   })
 
   tags = {
@@ -399,7 +396,7 @@ resource "aws_security_group" "jenkins_sg" {
 resource "aws_elb" "elb_jenkins" {
   name               = "elb-jenkins"
   security_groups    = [aws_security_group.jenkins_elb_sg.id]
-  availability_zones = ["eu-west-3a", "eu-west-3b", "eu-west-3c"]
+  availability_zones = ["us-west-1b", "us-west-1c"]
   listener {
     instance_port      = 8080
     instance_protocol  = "HTTP"

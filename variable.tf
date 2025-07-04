@@ -4,7 +4,7 @@ variable "domain" {
   default     = "chijiokedevops.space"
 }
 variable "nr_key" {
-  default = ""
+  default = "6853055"
 }
 variable "nr_acct_id" {
   default = ""

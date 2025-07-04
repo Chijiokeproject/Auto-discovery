@@ -1,10 +1,8 @@
-
 #!/bin/bash
-
 set -e
 
 # === CONFIGURATION ===
-SONAR_VERSION="25.5.0.107428"
+SONAR_VERSION="10.5.1.90531"
 SONAR_USER="sonaruser"
 SONAR_DIR="/opt/sonarqube"
 DB_USER="sonar"
@@ -13,20 +11,24 @@ DB_NAME="sonarqube"
 SONAR_ZIP="sonarqube-${SONAR_VERSION}.zip"
 SONAR_URL="https://binaries.sonarsource.com/Distribution/sonarqube/${SONAR_ZIP}"
 
+echo "Downloading SonarQube from: $SONAR_URL"
+echo "Using zip file: $SONAR_ZIP"
 
 # === INSTALL DEPENDENCIES ===
-apt update
-apt install -y openjdk-17-jdk unzip wget postgresql ufw
-
+sudo apt update
+sudo apt install -y openjdk-17-jdk unzip wget postgresql ufw nginx
 # === CREATE SONAR SYSTEM USER WITHOUT LOGIN ===
-useradd -r -s /bin/false $SONAR_USER
+if ! id "$SONAR_USER" &>/dev/null; then
+  sudo useradd -r -s /bin/false "$SONAR_USER"
+fi
 
 # === DOWNLOAD AND EXTRACT SONARQUBE ===
 cd /opt
-wget $SONAR_URL
-unzip $SONAR_ZIP
-mv sonarqube-${SONAR_VERSION} sonarqube
-chown -R $SONAR_USER:$SONAR_USER $SONAR_DIR
+sudo wget "$SONAR_URL"
+sudo unzip "$SONAR_ZIP"
+sudo mv "sonarqube-${SONAR_VERSION}" sonarqube
+sudo chown -R "$SONAR_USER":"$SONAR_USER" "$SONAR_DIR"
+
 
 # === CONFIGURE POSTGRESQL ===
 sudo -u postgres psql <<EOF
@@ -37,18 +39,18 @@ EOF
 
 # === CONFIGURE sonar.properties ===
 SONAR_PROP="$SONAR_DIR/conf/sonar.properties"
-sed -i "s|#sonar.jdbc.username=.*|sonar.jdbc.username=${DB_USER}|" $SONAR_PROP
-sed -i "s|#sonar.jdbc.password=.*|sonar.jdbc.password=${DB_PASSWORD}|" $SONAR_PROP
-sed -i "s|#sonar.jdbc.url=.*|sonar.jdbc.url=jdbc:postgresql://localhost/${DB_NAME}|" $SONAR_PROP
+sudo sed -i "s|#sonar.jdbc.username=.*|sonar.jdbc.username=${DB_USER}|" "$SONAR_PROP"
+sudo sed -i "s|#sonar.jdbc.password=.*|sonar.jdbc.password=${DB_PASSWORD}|" "$SONAR_PROP"
+sudo sed -i "s|#sonar.jdbc.url=.*|sonar.jdbc.url=jdbc:postgresql://localhost/${DB_NAME}|" "$SONAR_PROP"
 
 # === INCREASE FILE LIMITS ===
-echo "$SONAR_USER soft nofile 65536" >> /etc/security/limits.conf
-echo "$SONAR_USER hard nofile 65536" >> /etc/security/limits.conf
-echo "vm.max_map_count=262144" >> /etc/sysctl.conf
-sysctl -w vm.max_map_count=262144
+echo "$SONAR_USER soft nofile 65536" | sudo tee -a /etc/security/limits.conf
+echo "$SONAR_USER hard nofile 65536" | sudo tee -a /etc/security/limits.conf
+echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -w vm.max_map_count=262144
 
 # === CREATE SYSTEMD SERVICE ===
-cat <<EOF > /etc/systemd/system/sonarqube.service
+sudo tee /etc/systemd/system/sonarqube.service > /dev/null <<EOF
 [Unit]
 Description=SonarQube service
 After=syslog.target network.target postgresql.service
@@ -67,28 +69,22 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
-ufw allow 9000/tcp
+# === OPEN FIREWALL PORT ===
+sudo ufw allow 9000/tcp
 
 # === ENABLE AND START SONARQUBE ===
-systemctl daemon-reexec
-systemctl daemon-reload
-systemctl enable sonarqube
-systemctl start sonarqube
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable sonarqube
+sudo systemctl start sonarqube
 
-# === DONE ===
-echo "SonarQube $SONAR_VERSION installed and running"
-
-
-# ====== INSTALL NGINX ===========
-
-apt update
-apt install -y nginx
+echo "✅ SonarQube $SONAR_VERSION installed and running."
 
 # === Configure NGINX for SonarQube ===
-cat <<EOF > /etc/nginx/sites-available/sonarqube
+sudo tee /etc/nginx/sites-available/sonarqube > /dev/null <<EOF
 server {
     listen 80;
-    server_name sonarqube.set30.site;
+    server_name sonarqube.chijiokedevops.space;
 
     location / {
         proxy_pass http://localhost:9000;
@@ -105,9 +101,16 @@ server {
 EOF
 
 # Enable the site and restart NGINX
-ln -s /etc/nginx/sites-available/sonarqube /etc/nginx/sites-enabled/
-nginx -t && systemctl restart nginx
+sudo ln -s /etc/nginx/sites-available/sonarqube /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl restart nginx
 
-#  install newrelic agent
-curl -Ls https://download.newrelic.com/install/newrelic-cli/scipts/install.sh | bash && sudo NEW_RELIC_API_KEY="${nr_key}" NEW_RELIC_ACCOUNT_ID="${nr_acct_id}" NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
-sudo hostnamectl set-hostname jenkins
+# === INSTALL NEW RELIC AGENT ===
+curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash
+sudo NEW_RELIC_API_KEY="${nr_key}" \
+     NEW_RELIC_ACCOUNT_ID="${nr_acct_id}" \
+     NEW_RELIC_REGION="EU" \
+     /usr/local/bin/newrelic install -y
+
+
+# Set the hostname
+sudo hostnamectl set-hostname sonarqube
