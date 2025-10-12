@@ -86,4 +86,6 @@ curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh |
 
 #setting the host name
 sudo hostnamectl set-hostname prod-instance
+
+#reboot to apply group membership changes
 sudo reboot
